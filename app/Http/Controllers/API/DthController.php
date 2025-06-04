@@ -5,183 +5,277 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Dth;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
 class DthController extends Controller
 {
-    public function index()
+    /**
+     * Display a listing of DTH recharges
+     */
+    public function index(Request $request): JsonResponse
     {
-        $recharges = Dth::orderBy('created_at', 'desc')->paginate(10);
-        return response()->json([
-            'status' => 'success',
-            'data' => $recharges
-        ]);
-    }
-
-    public function store(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'service' => 'required|string|max:50',
-            'mobile_no' => 'required|string|max:20|regex:/^[0-9]+$/',
-            'amount' => 'required|numeric|min:1|max:99999999.99',
-        ]);
-
-        if ($validator->fails()) {
+        try {
+            $query = Dth::orderBy('created_at', 'desc');
+            
+            // Optional filtering
+            if ($request->has('status')) {
+                $query->where('status', $request->status);
+            }
+            
+            if ($request->has('service')) {
+                $query->where('service', $request->service);
+            }
+            
+            if ($request->has('mobile_no')) {
+                $query->where('mobile_no', $request->mobile_no);
+            }
+            
+            // Pagination
+            $perPage = $request->get('per_page', 10);
+            $recharges = $query->paginate($perPage);
+            
+            return response()->json([
+                'status' => 'success',
+                'message' => 'DTH recharges retrieved successfully',
+                'data' => $recharges
+            ], 200);
+            
+        } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
-            ], 422);
+                'message' => 'Failed to fetch DTH recharges',
+                'error' => $e->getMessage()
+            ], 500);
         }
+    }
 
+    /**
+     * Store a newly created DTH recharge
+     */
+    public function store(Request $request): JsonResponse
+    {
         try {
-            $recharge = Dth::create([
+            // Validation rules
+            $validator = Validator::make($request->all(), [
+                'service' => 'required|string|in:airtel,bigtv,dishtv,tatasky,videocon,suntv',
+                'mobile_no' => 'required|string|regex:/^[0-9]{10}$/',
+                'amount' => 'required|numeric|min:1|max:10000'
+            ], [
+                'service.required' => 'Please select an operator',
+                'service.in' => 'Please select a valid operator',
+                'mobile_no.required' => 'Mobile number is required',
+                'mobile_no.regex' => 'Please enter a valid 10-digit mobile number',
+                'amount.required' => 'Amount is required',
+                'amount.numeric' => 'Amount must be a number',
+                'amount.min' => 'Minimum amount is ₹1',
+                'amount.max' => 'Maximum amount is ₹10,000'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            // Generate unique transaction ID
+            $transactionId = 'DTH' . time() . rand(1000, 9999);
+
+            // Create DTH recharge record
+            $dthRecharge = Dth::create([
                 'service' => $request->service,
                 'mobile_no' => $request->mobile_no,
                 'amount' => $request->amount,
-                'transaction_id' => $this->generateTransactionId(),
-                'status' => 'Pending'
+                'transaction_id' => $transactionId,
+                'status' => 'pending'
             ]);
 
-            $this->processRecharge($recharge);
+            // Simulate recharge processing (you can integrate with actual DTH API here)
+            $this->processRecharge($dthRecharge);
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'DTH recharge initiated successfully',
-                'data' => $recharge
+                'data' => $dthRecharge->fresh()
             ], 201);
 
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Failed to process recharge',
+                'message' => 'Failed to process DTH recharge',
                 'error' => $e->getMessage()
             ], 500);
         }
     }
 
-    public function show($id)
+    /**
+     * Display the specified DTH recharge
+     */
+    public function show($id): JsonResponse
     {
         try {
-            $recharge = Dth::findOrFail($id);
+            $dthRecharge = Dth::findOrFail($id);
+            
             return response()->json([
                 'status' => 'success',
-                'data' => $recharge
-            ]);
-        } catch (\Exception $e) {
+                'message' => 'DTH recharge retrieved successfully',
+                'data' => $dthRecharge
+            ], 200);
+            
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Recharge not found'
+                'message' => 'DTH recharge not found'
             ], 404);
-        }
-    }
-
-    public function update(Request $request, $id)
-    {
-        $validator = Validator::make($request->all(), [
-            'status' => 'required|in:Pending,Success,Failed',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        try {
-            $recharge = Dth::findOrFail($id);
-            $recharge->update(['status' => $request->status]);
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Recharge status updated successfully',
-                'data' => $recharge
-            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Failed to update recharge status',
+                'message' => 'Failed to fetch DTH recharge',
                 'error' => $e->getMessage()
             ], 500);
         }
     }
 
-    public function destroy($id)
+    /**
+     * Update the specified DTH recharge
+     */
+    public function update(Request $request, $id): JsonResponse
     {
         try {
-            $recharge = Dth::findOrFail($id);
-            $recharge->delete();
+            $dthRecharge = Dth::findOrFail($id);
+            
+            // Validation rules for update
+            $validator = Validator::make($request->all(), [
+                'service' => 'sometimes|string|in:airtel,bigtv,dishtv,tatasky,videocon,suntv',
+                'mobile_no' => 'sometimes|string|regex:/^[0-9]{10}$/',
+                'amount' => 'sometimes|numeric|min:1|max:10000',
+                'status' => 'sometimes|in:pending,completed,failed',
+                'transaction_id' => 'sometimes|string'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $dthRecharge->update($request->only([
+                'service', 'mobile_no', 'amount', 'status', 'transaction_id'
+            ]));
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Recharge deleted successfully'
-            ]);
+                'message' => 'DTH recharge updated successfully',
+                'data' => $dthRecharge->fresh()
+            ], 200);
+            
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'DTH recharge not found'
+            ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Failed to delete recharge',
+                'message' => 'Failed to update DTH recharge',
                 'error' => $e->getMessage()
             ], 500);
         }
     }
 
-    public function getByMobile($mobile)
+    /**
+     * Remove the specified DTH recharge
+     */
+    public function destroy($id): JsonResponse
     {
-        $recharges = Dth::where('mobile_no', $mobile)
-                        ->orderBy('created_at', 'desc')
-                        ->get();
-
-        return response()->json([
-            'status' => 'success',
-            'data' => $recharges
-        ]);
+        try {
+            $dthRecharge = Dth::findOrFail($id);
+            $dthRecharge->delete();
+            
+            return response()->json([
+                'status' => 'success',
+                'message' => 'DTH recharge deleted successfully'
+            ], 200);
+            
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'DTH recharge not found'
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to delete DTH recharge',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
-    public function getByService($service)
+    /**
+     * Get recharge statistics
+     */
+    public function statistics(): JsonResponse
     {
-        $recharges = Dth::where('service', $service)
-                        ->orderBy('created_at', 'desc')
-                        ->paginate(10);
+        try {
+            $stats = [
+                'total_recharges' => Dth::count(),
+                'pending_recharges' => Dth::where('status', 'pending')->count(),
+                'completed_recharges' => Dth::where('status', 'completed')->count(),
+                'failed_recharges' => Dth::where('status', 'failed')->count(),
+                'total_amount' => Dth::where('status', 'completed')->sum('amount'),
+                'today_recharges' => Dth::whereDate('created_at', today())->count(),
+                'today_amount' => Dth::whereDate('created_at', today())
+                                    ->where('status', 'completed')
+                                    ->sum('amount')
+            ];
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $recharges
-        ]);
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Statistics retrieved successfully',
+                'data' => $stats
+            ], 200);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch statistics',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
-    public function getStats()
+    /**
+     * Process the recharge (simulate API call)
+     * In real implementation, you would integrate with DTH provider's API
+     */
+    private function processRecharge(Dth $dthRecharge): void
     {
-        $stats = [
-            'total_recharges' => Dth::count(),
-            'pending_recharges' => Dth::where('status', 'Pending')->count(),
-            'successful_recharges' => Dth::where('status', 'Success')->count(),
-            'failed_recharges' => Dth::where('status', 'Failed')->count(),
-            'total_amount' => Dth::where('status', 'Success')->sum('amount'),
-            'today_recharges' => Dth::whereDate('created_at', today())->count(),
-            'today_amount' => Dth::whereDate('created_at', today())
-                                ->where('status', 'Success')
-                                ->sum('amount')
-        ];
-
-        return response()->json([
-            'status' => 'success',
-            'data' => $stats
-        ]);
-    }
-
-    private function generateTransactionId()
-    {
-        return 'DTH' . date('YmdHis') . Str::upper(Str::random(6));
-    }
-
-    private function processRecharge($recharge)
-    {
-        $success = rand(1, 10) > 2;
-
-        $recharge->status = $success ? 'Success' : 'Failed';
-        $recharge->save(); // <-- use save() for better traceability
+        try {
+            // Simulate processing delay
+            // In real implementation, you would call DTH provider's API here
+            
+            // For demo purposes, randomly set success/failed status
+            $success = rand(1, 10) > 2; // 80% success rate for demo
+            
+            if ($success) {
+                $dthRecharge->update([
+                    'status' => 'completed'
+                ]);
+            } else {
+                $dthRecharge->update([
+                    'status' => 'failed'
+                ]);
+            }
+            
+        } catch (\Exception $e) {
+            $dthRecharge->update([
+                'status' => 'failed'
+            ]);
+        }
     }
 }

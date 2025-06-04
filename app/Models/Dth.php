@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Carbon\Carbon;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Dth extends Model
 {
@@ -32,6 +32,7 @@ class Dth extends Model
     protected $casts = [
         'amount' => 'decimal:2',
         'created_at' => 'datetime',
+        'updated_at' => 'datetime'
     ];
 
     /**
@@ -40,88 +41,35 @@ class Dth extends Model
     protected $hidden = [];
 
     /**
-     * Boot method for model events
+     * Default values for attributes
      */
-    protected static function boot()
-    {
-        parent::boot();
+    protected $attributes = [
+        'status' => 'pending'
+    ];
 
-        // Set default status when creating
-        static::creating(function ($model) {
-            if (empty($model->status)) {
-                $model->status = 'Pending';
-            }
-        });
+    /**
+     * Validation rules
+     */
+    public static $rules = [
+        'service' => 'required|string|in:airtel,bigtv,dishtv,tatasky,videocon,suntv',
+        'mobile_no' => 'required|string|regex:/^[0-9]{10}$/',
+        'amount' => 'required|numeric|min:1|max:10000',
+        'transaction_id' => 'nullable|string|unique:dth_recharges',
+        'status' => 'in:pending,completed,failed'
+    ];
+
+    /**
+     * Get the service name in uppercase
+     */
+    public function getServiceNameAttribute(): string
+    {
+        return strtoupper($this->service);
     }
 
     /**
-     * Scope to filter by service
+     * Get formatted amount with currency
      */
-    public function scopeByService($query, $service)
-    {
-        return $query->where('service', $service);
-    }
-
-    /**
-     * Scope to filter by mobile number
-     */
-    public function scopeByMobile($query, $mobile)
-    {
-        return $query->where('mobile_no', $mobile);
-    }
-
-    /**
-     * Scope to filter by status
-     */
-    public function scopeByStatus($query, $status)
-    {
-        return $query->where('status', $status);
-    }
-
-    /**
-     * Scope to get pending recharges
-     */
-    public function scopePending($query)
-    {
-        return $query->where('status', 'Pending');
-    }
-
-    /**
-     * Scope to get successful recharges
-     */
-    public function scopeSuccess($query)
-    {
-        return $query->where('status', 'Success');
-    }
-
-    /**
-     * Scope to get failed recharges
-     */
-    public function scopeFailed($query)
-    {
-        return $query->where('status', 'Failed');
-    }
-
-    /**
-     * Scope to get today's recharges
-     */
-    public function scopeToday($query)
-    {
-        return $query->whereDate('created_at', Carbon::today());
-    }
-
-    /**
-     * Scope to get recharges within date range
-     */
-    public function scopeDateRange($query, $startDate, $endDate)
-    {
-        return $query->whereBetween('created_at', [$startDate, $endDate]);
-    }
-
-    /**
-     * Get formatted amount
-     */
-    public function getFormattedAmountAttribute()
+    public function getFormattedAmountAttribute(): string
     {
         return '₹' . number_format($this->amount, 2);
     }
@@ -129,89 +77,140 @@ class Dth extends Model
     /**
      * Get status badge class for UI
      */
-    public function getStatusBadgeAttribute()
+    public function getStatusBadgeClassAttribute(): string
     {
-        switch ($this->status) {
-            case 'Success':
-                return 'badge-success';
-            case 'Failed':
-                return 'badge-danger';
-            case 'Pending':
-            default:
-                return 'badge-warning';
-        }
+        return match($this->status) {
+            'completed' => 'bg-success',
+            'failed' => 'bg-danger',
+            'pending' => 'bg-warning',
+            default => 'bg-secondary'
+        };
     }
 
     /**
      * Get formatted created date
      */
-    public function getFormattedDateAttribute()
+    public function getFormattedDateAttribute(): string
     {
-        return $this->created_at->format('d M Y, h:i A');
+        return $this->created_at->format('d/m/Y H:i:s');
     }
 
     /**
-     * Check if recharge is successful
+     * Scope for filtering by status
      */
-    public function isSuccessful()
+    public function scopeByStatus($query, $status)
     {
-        return $this->status === 'Success';
+        return $query->where('status', $status);
     }
 
     /**
-     * Check if recharge is pending
+     * Scope for filtering by service
      */
-    public function isPending()
+    public function scopeByService($query, $service)
     {
-        return $this->status === 'Pending';
+        return $query->where('service', $service);
     }
 
     /**
-     * Check if recharge is failed
+     * Scope for filtering by mobile number
      */
-    public function isFailed()
+    public function scopeByMobile($query, $mobile)
     {
-        return $this->status === 'Failed';
+        return $query->where('mobile_no', $mobile);
     }
 
     /**
-     * Get popular services
+     * Scope for today's recharges
      */
-    public static function getPopularServices()
+    public function scopeToday($query)
     {
-        return self::select('service')
-                   ->selectRaw('COUNT(*) as recharge_count')
-                   ->groupBy('service')
-                   ->orderBy('recharge_count', 'desc')
-                   ->limit(10)
-                   ->get();
+        return $query->whereDate('created_at', today());
     }
 
     /**
-     * Get monthly statistics
+     * Scope for this month's recharges
      */
-    public static function getMonthlyStats($year, $month)
+    public function scopeThisMonth($query)
     {
-        return self::whereYear('created_at', $year)
-                   ->whereMonth('created_at', $month)
-                   ->selectRaw('
-                       COUNT(*) as total_recharges,
-                       SUM(CASE WHEN status = "Success" THEN amount ELSE 0 END) as total_amount,
-                       COUNT(CASE WHEN status = "Success" THEN 1 END) as successful_recharges,
-                       COUNT(CASE WHEN status = "Failed" THEN 1 END) as failed_recharges,
-                       COUNT(CASE WHEN status = "Pending" THEN 1 END) as pending_recharges
-                   ')
-                   ->first();
+        return $query->whereMonth('created_at', now()->month)
+                    ->whereYear('created_at', now()->year);
     }
 
     /**
-     * Search recharges
+     * Scope for successful recharges
      */
-    public static function search($query)
+    public function scopeSuccessful($query)
     {
-        return self::where('mobile_no', 'LIKE', "%{$query}%")
-                   ->orWhere('service', 'LIKE', "%{$query}%")
-                   ->orWhere('transaction_id', 'LIKE', "%{$query}%")
-                   ->orderBy('created_at', 'desc');
+        return $query->where('status', 'completed');
+    }
+
+    /**
+     * Scope for failed recharges
+     */
+    public function scopeFailed($query)
+    {
+        return $query->where('status', 'failed');
+    }
+
+    /**
+     * Scope for pending recharges
+     */
+    public function scopePending($query)
+    {
+        return $query->where('status', 'pending');
+    }
+
+    /**
+     * Generate unique transaction ID
+     */
+    public static function generateTransactionId(): string
+    {
+        do {
+            $transactionId = 'DTH' . time() . rand(1000, 9999);
+        } while (static::where('transaction_id', $transactionId)->exists());
+        
+        return $transactionId;
+    }
+
+    /**
+     * Get service options for dropdown
+     */
+    public static function getServiceOptions(): array
+    {
+        return [
+            'airtel' => 'AIRTEL DTH',
+            'bigtv' => 'BIG TV DTH',
+            'dishtv' => 'DISH TV DTH',
+            'tatasky' => 'TATA SKY DTH',
+            'videocon' => 'VIDEOCON DTH',
+            'suntv' => 'SUN TV DTH'
+        ];
+    }
+
+    /**
+     * Get status options
+     */
+    public static function getStatusOptions(): array
+    {
+        return [
+            'pending' => 'Pending',
+            'completed' => 'Completed',
+            'failed' => 'Failed'
+        ];
+    }
+
+    /**
+     * Boot method for model events
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Auto-generate transaction ID if not provided
+        static::creating(function ($model) {
+            if (empty($model->transaction_id)) {
+                $model->transaction_id = static::generateTransactionId();
+            }
+        });
     }
 }

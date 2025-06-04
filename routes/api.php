@@ -18,13 +18,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
     
 });
 
+// DTH Recharge Routes
 Route::prefix('dth')->group(function () {
+    // Get all DTH recharges (with optional filtering and pagination)
     Route::get('/', [DthController::class, 'index']);
     Route::post('/', [DthController::class, 'store']);
     Route::get('/{id}', [DthController::class, 'show']);
     Route::put('/{id}', [DthController::class, 'update']);
+    Route::patch('/{id}', [DthController::class, 'update']);
     Route::delete('/{id}', [DthController::class, 'destroy']);
-    Route::get('/mobile/{mobile}', [DthController::class, 'getByMobile']);
-    Route::get('/service/{service}', [DthController::class, 'getByService']);
-    Route::get('/stats/overview', [DthController::class, 'getStats']);
+    Route::get('/stats/dashboard', [DthController::class, 'statistics']);
 });
