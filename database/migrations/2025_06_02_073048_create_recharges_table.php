@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('mobile_no');
             $table->decimal('amount', 10, 2);
             $table->string('transaction_id')->unique();
-            $table->enum('status', ['pending', 'completed', 'failed'])->default('pending');
+            $table->enum('status', ['pending', 'success', 'failed'])->default('pending');
             $table->timestamps();
 
             // Indexes for better performance

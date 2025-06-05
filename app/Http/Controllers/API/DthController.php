@@ -19,21 +19,40 @@ class DthController extends Controller
         try {
             $query = Dth::orderBy('created_at', 'desc');
             
-            // Optional filtering
-            if ($request->has('status')) {
+            // Date range filtering
+            if ($request->has('from_date') && $request->has('to_date')) {
+                $fromDate = $request->from_date . ' 00:00:00';
+                $toDate = $request->to_date . ' 23:59:59';
+                $query->whereBetween('created_at', [$fromDate, $toDate]);
+            }
+            
+            // Status filtering - only apply if status is provided and not empty
+            if ($request->has('status') && $request->status !== '' && $request->status !== null) {
                 $query->where('status', $request->status);
             }
             
-            if ($request->has('service')) {
+            // Service filtering - only apply if service is provided and not empty
+            if ($request->has('service') && $request->service !== '' && $request->service !== null) {
                 $query->where('service', $request->service);
             }
             
-            if ($request->has('mobile_no')) {
+            // Mobile number filtering
+            if ($request->has('mobile_no') && $request->mobile_no !== '') {
                 $query->where('mobile_no', $request->mobile_no);
             }
             
+            // Debug logging
+            // \Log::info('DTH Query Parameters:', [
+            //     'from_date' => $request->from_date,
+            //     'to_date' => $request->to_date,
+            //     'status' => $request->status,
+            //     'service' => $request->service,
+            //     'sql' => $query->toSql(),
+            //     'bindings' => $query->getBindings()
+            // ]);
+            
             // Pagination
-            $perPage = $request->get('per_page', 10);
+            $perPage = $request->get('per_page', 50); // Increased default for reports
             $recharges = $query->paginate($perPage);
             
             return response()->json([
@@ -43,6 +62,7 @@ class DthController extends Controller
             ], 200);
             
         } catch (\Exception $e) {
+            // \Log::error('DTH Index Error:', ['error' => $e->getMessage()]);
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to fetch DTH recharges',
@@ -82,7 +102,7 @@ class DthController extends Controller
             }
 
             // Generate unique transaction ID
-            $transactionId = 'DTH' . time() . rand(1000, 9999);
+            $transactionId = 'PYTCH' . date('Ymd') . $this->generateRandomString(4) . rand(1000, 9999);
 
             // Create DTH recharge record
             $dthRecharge = Dth::create([
@@ -93,14 +113,23 @@ class DthController extends Controller
                 'status' => 'pending'
             ]);
 
-            // Simulate recharge processing (you can integrate with actual DTH API here)
             $this->processRecharge($dthRecharge);
 
-            return response()->json([
-                'status' => 'success',
-                'message' => 'DTH recharge initiated successfully',
-                'data' => $dthRecharge->fresh()
-            ], 201);
+            $dthRecharge = $dthRecharge->fresh();
+
+            if ($dthRecharge->status === 'failed') {
+                return response()->json([
+                    'status' => 'failed',
+                    'message' => 'Recharge failed. Please try again.',
+                    'data' => $dthRecharge
+                ], 200); // Use 200 status code so frontend can handle the response properly
+            } else {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'DTH recharge initiated successfully',
+                    'data' => $dthRecharge
+                ], 201);
+            }
 
         } catch (\Exception $e) {
             return response()->json([
@@ -110,6 +139,18 @@ class DthController extends Controller
             ], 500);
         }
     }
+
+    private function generateRandomString($length = 4): string
+    {
+        $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+        $randomString = '';
+
+        for ($i = 0; $i < $length; $i++) {
+            $randomString .= $characters[rand(0, strlen($characters) - 1)];
+        }
+
+        return $randomString;
+    } 
 
     /**
      * Display the specified DTH recharge
@@ -264,7 +305,7 @@ class DthController extends Controller
             
             if ($success) {
                 $dthRecharge->update([
-                    'status' => 'completed'
+                    'status' => 'success'
                 ]);
             } else {
                 $dthRecharge->update([
