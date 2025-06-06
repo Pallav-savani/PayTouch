@@ -40,18 +40,11 @@ class DthController extends Controller
             if ($request->has('mobile_no') && $request->mobile_no !== '') {
                 $query->where('mobile_no', $request->mobile_no);
             }
-            
-            // Debug logging
-            // \Log::info('DTH Query Parameters:', [
-            //     'from_date' => $request->from_date,
-            //     'to_date' => $request->to_date,
-            //     'status' => $request->status,
-            //     'service' => $request->service,
-            //     'sql' => $query->toSql(),
-            //     'bindings' => $query->getBindings()
-            // ]);
-            
-            // Pagination
+
+            if ($request->has('transaction_id') && $request->transaction_id !== '') {
+                $query->where('transaction_id', $request->transaction_id);
+            }
+
             $perPage = $request->get('per_page', 50); // Increased default for reports
             $recharges = $query->paginate($perPage);
             
@@ -290,17 +283,9 @@ class DthController extends Controller
         }
     }
 
-    /**
-     * Process the recharge (simulate API call)
-     * In real implementation, you would integrate with DTH provider's API
-     */
     private function processRecharge(Dth $dthRecharge): void
     {
         try {
-            // Simulate processing delay
-            // In real implementation, you would call DTH provider's API here
-            
-            // For demo purposes, randomly set success/failed status
             $success = rand(1, 10) > 2; // 80% success rate for demo
             
             if ($success) {
@@ -317,6 +302,247 @@ class DthController extends Controller
             $dthRecharge->update([
                 'status' => 'failed'
             ]);
+        }
+    }
+
+    // pending recharge code.
+    public function getPendingTransactions(Request $request): JsonResponse
+    {
+        try {
+            $query = Dth::where('status', 'pending')->orderBy('created_at', 'desc');
+            
+            // Date range filtering
+            if ($request->has('from_date') && $request->has('to_date')) {
+                $fromDate = $request->from_date . ' 00:00:00';
+                $toDate = $request->to_date . ' 23:59:59';
+                $query->whereBetween('created_at', [$fromDate, $toDate]);
+            }
+            
+            // Mobile number filtering
+            if ($request->has('mobile_no') && $request->mobile_no !== '') {
+                $query->where('mobile_no', $request->mobile_no);
+            }
+            
+            // Pagination
+            $perPage = $request->get('per_page', 20);
+            $pendingTransactions = $query->paginate($perPage);
+            
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Pending transactions retrieved successfully',
+                'data' => $pendingTransactions,
+                'count' => $pendingTransactions->total()
+            ], 200);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch pending transactions',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function retryTransaction($id): JsonResponse
+    {
+        try {
+            $dthRecharge = Dth::findOrFail($id);
+            
+            if ($dthRecharge->status !== 'pending') {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Only pending transactions can be retried'
+                ], 400);
+            }
+            
+            // Process the recharge again
+            $this->processRecharge($dthRecharge);
+            $dthRecharge = $dthRecharge->fresh();
+            
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Transaction retry completed',
+                'data' => $dthRecharge
+            ], 200);
+            
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Transaction not found'
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to retry transaction',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function retryAllPending(): JsonResponse
+    {
+        try {
+            $pendingTransactions = Dth::where('status', 'pending')->get();
+            
+            if ($pendingTransactions->isEmpty()) {
+                return response()->json([
+                    'status' => 'info',
+                    'message' => 'No pending transactions found'
+                ], 200);
+            }
+            
+            $retryCount = 0;
+            $successCount = 0;
+            
+            foreach ($pendingTransactions as $transaction) {
+                $this->processRecharge($transaction);
+                $retryCount++;
+                
+                $transaction = $transaction->fresh();
+                if ($transaction->status === 'success') {
+                    $successCount++;
+                }
+            }
+            
+            return response()->json([
+                'status' => 'success',
+                'message' => "Retried {$retryCount} transactions. {$successCount} succeeded.",
+                'data' => [
+                    'retried' => $retryCount,
+                    'succeeded' => $successCount,
+                    'failed' => $retryCount - $successCount
+                ]
+            ], 200);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to retry pending transactions',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // failed recharge code
+    public function getFailedTransactions(Request $request): JsonResponse
+    {
+        try {
+            $query = Dth::where('status', 'failed')->orderBy('created_at', 'desc');
+            
+            // Date range filtering
+            if ($request->has('from_date') && $request->has('to_date')) {
+                $fromDate = $request->from_date . ' 00:00:00';
+                $toDate = $request->to_date . ' 23:59:59';
+                $query->whereBetween('created_at', [$fromDate, $toDate]);
+            }
+            
+            // Mobile number filtering
+            if ($request->has('mobile_no') && $request->mobile_no !== '') {
+                $query->where('mobile_no', $request->mobile_no);
+            }
+            
+            // Pagination
+            $perPage = $request->get('per_page', 20);
+            $failedTransactions = $query->paginate($perPage);
+            
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Failed transactions retrieved successfully',
+                'data' => $failedTransactions,
+                'count' => $failedTransactions->total()
+            ], 200);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch failed transactions',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function retryFailedTransaction($id): JsonResponse
+    {
+        try {
+            $dthRecharge = Dth::findOrFail($id);
+            
+            if ($dthRecharge->status !== 'failed') {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Only failed transactions can be retried'
+                ], 400);
+            }
+            
+            // Reset status to pending before retry
+            $dthRecharge->update(['status' => 'pending']);
+            
+            // Process the recharge again
+            $this->processRecharge($dthRecharge);
+            $dthRecharge = $dthRecharge->fresh();
+            
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Failed transaction retry completed',
+                'data' => $dthRecharge
+            ], 200);
+            
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Transaction not found'
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to retry transaction',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function retryAllFailed(): JsonResponse
+    {
+        try {
+            $failedTransactions = Dth::where('status', 'failed')->get();
+            
+            if ($failedTransactions->isEmpty()) {
+                return response()->json([
+                    'status' => 'info',
+                    'message' => 'No failed transactions found'
+                ], 200);
+            }
+            
+            $retryCount = 0;
+            $successCount = 0;
+            
+            foreach ($failedTransactions as $transaction) {
+                // Reset to pending before retry
+                $transaction->update(['status' => 'pending']);
+                $this->processRecharge($transaction);
+                $retryCount++;
+                
+                $transaction = $transaction->fresh();
+                if ($transaction->status === 'success') {
+                    $successCount++;
+                }
+            }
+            
+            return response()->json([
+                'status' => 'success',
+                'message' => "Retried {$retryCount} failed transactions. {$successCount} succeeded.",
+                'data' => [
+                    'retried' => $retryCount,
+                    'succeeded' => $successCount,
+                    'failed' => $retryCount - $successCount
+                ]
+            ], 200);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to retry failed transactions',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 }
