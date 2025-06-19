@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+        'mobikwik' => [
+        'base_url' => env('MOBIKWIK_BASE_URL', 'https://www.mobikwik.com/api'),
+        'merchant_id' => env('MOBIKWIK_MERCHANT_ID'),
+        'secret_key' => env('MOBIKWIK_SECRET_KEY'),
+        'api_key' => env('MOBIKWIK_API_KEY'),
+    ],
+
 ];

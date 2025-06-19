@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('search_history', function (Blueprint $table) {
             $table->id();
-            $table->string('op', )->nullable(); // Mobile number from recharges table
-            $table->string('Operator Name', 50)->nullable(); // Transaction ID from recharges table
+            $table->string('customer_id', 10)->nullable(); // Mobile number from recharges table
+            $table->string('transaction_id', 50)->nullable(); // Transaction ID from recharges table
             $table->enum('status', ['success', 'pending', 'failed', 'unknown'])->default('unknown');
             $table->timestamp('search_time')->useCurrent(); 
             $table->timestamps();

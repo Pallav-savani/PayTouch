@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title></title>
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
@@ -74,8 +76,8 @@
                             <div class="col-auto mt-3"><a href="#" class="btn btn gradient-bg text-white">Utility Bills</a></div>
                             <div class="col-auto mt-3"><a href="#" class="btn btn gradient-bg text-white">Reports</a></div>
                             <div class="col-auto mt-3"><a href="#" class="btn btn gradient-bg text-white">My Account</a></div>
-                            <div class="col-auto mt-3"><a href="#" class="btn btn gradient-bg text-white">CC Bill Pay</a></div>
-                            <div class="col-auto mt-3"><a href="#" class="btn btn gradient-bg text-white">Load Wallet</a></div>
+                            <div class="col-auto mt-3"><a href="{{ route('ccbill') }}" class="btn btn gradient-bg text-white">CC Bill Pay</a></div>
+                            <div class="col-auto mt-3"><a href="{{ route('wallet')  }}" class="btn btn gradient-bg text-white">Load Wallet</a></div>
                             <div class="col-auto mt-3"><a href="#" class="btn btn gradient-bg text-white">Flight Booking</a></div>
                             <div class="col-auto mt-3"><a href="#" class="btn btn gradient-bg text-white">Railway Booking</a></div>
                             <div class="col-auto mt-3"><a href="#" class="btn btn gradient-bg text-white">Hotel Booking</a></div>

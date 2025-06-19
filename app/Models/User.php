@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
@@ -21,6 +22,7 @@ class User extends Authenticatable
         'email',
         'password',
         'email_verified_at',
+        'wallet_balance',
     ];
 
     /**
@@ -41,7 +43,32 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed', 
+        'wallet_balance' => 'decimal:2',
     ];
+
+    public function walletTransactions(): HasMany
+    {
+        return $this->hasMany(WalletTransaction::class);
+    }
+
+    public function hasEnoughBalance(float $amount): bool
+    {
+        return $this->wallet_balance >= $amount;
+    }
+
+    public function deductBalance(float $amount): bool
+    {
+        if ($this->hasEnoughBalance($amount)) {
+            $this->decrement('wallet_balance', $amount);
+            return true;
+        }
+        return false;
+    }
+
+    public function addBalance(float $amount): void
+    {
+        $this->increment('wallet_balance', $amount);
+    }
 
     public function findForPassport($identifier)
     {
@@ -56,5 +83,34 @@ class User extends Authenticatable
     public function setMobileAttribute($value)
     {
         $this->attributes['mobile'] = preg_replace('/\D/', '', $value);
+    }
+
+    public function ccBillPayments()
+    {
+        return $this->hasMany(CcBillPayment::class);
+    }
+
+    /**
+     * Get user's successful CC bill payments
+     */
+    public function successfulCcPayments()
+    {
+        return $this->ccBillPayments()->where('status', 'success');
+    }
+
+    /**
+     * Get user's pending CC bill payments
+     */
+    public function pendingCcPayments()
+    {
+        return $this->ccBillPayments()->where('status', 'pending');
+    }
+
+    /**
+     * Get user's failed CC bill payments
+     */
+    public function failedCcPayments()
+    {
+        return $this->ccBillPayments()->where('status', 'failed');
     }
 }
