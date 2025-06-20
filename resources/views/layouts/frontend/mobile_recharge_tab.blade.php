@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PayTouch | Mobile Recharge</title>
-    <style>
+    <!-- <style>
         body {
             font-family: 'Segoe UI', sans-serif;
             background-color: #f4f9fc;
@@ -68,169 +68,242 @@
             color: #f64f59;
             font-weight: bold;
         }
-    </style>
+    </style> -->
 </head>
 <body>
 
-<h2>Mobile Recharge - PayTouch</h2>
+<!-- <h2>Mobile Recharge - PayTouch</h2> -->
 
-<div class="service-card card mt-3">
-    <div class="card-body">
-        <div class="d-flex align-items-start user-service-tab">
-            <div class="nav flex-column nav-pills me-3" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-                <button class="nav-link active" id="v-pills-recharge-tab" data-bs-toggle="pill"
-                    data-bs-target="#v-pills-recharge" type="button" role="tab" aria-controls="v-pills-recharge"
-                    aria-selected="true">Mobile Recharge</button>   
-            </div>
 
-<div class="container">
 
-    <!-- Recharge Form -->
-    <div class="recharge-form">
-        <h3>Select Recharge Plan</h3>
-
-        <input type="text" id="mobile" placeholder="Enter Mobile Number" maxlength="10" oninput="validateMobile()" />
-
-        <select id="operator" onchange="loadPlans()">
-            <option value="">Select Operator</option>
-            <option value="1">Airtel</option>
-            <option value="2">Jio</option>
-        </select>
-
-        <select id="circle" onchange="loadPlans()">
-            <option value="">Select Circle</option>
-            <option value="1">Andhra Pradesh</option>
-            <option value="2">Delhi</option>
-        </select>
-
-        <select id="planType" onchange="loadPlans()">
-            <option value="2">All Plans</option>
-            <option value="3">Topup</option>
-            <option value="17">Special Offer</option>
-        </select>
-
-        <div id="plansList" style="margin-top: 20px;">
-            <p class="loading">Please select operator & circle to load plans.</p>
+<!-- Toast Container for Top Right Notifications -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
+    <div id="alertToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="me-auto" id="toastTitle">Notification</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
-
-        <input type="text" id="RechargeAmt" placeholder="Recharge Amount" maxlength="3" />
-
-        <button onclick="recharge()">Recharge Now</button>
+        <div class="toast-body" id="toastBody">
+            <!-- Message will be inserted here -->
+        </div>
     </div>
-
-    <!-- Recharge History -->
-    <div class="history">
-        <h3>My Recharge History</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Mobile</th>
-                    <th>Operator</th>
-                    <th>Type</th>
-                    <th>Amount</th>
-                    <th>Status</th>
-                    <th>Time</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Will be loaded dynamically -->
-            </tbody>
-        </table>
-    </div>
-
 </div>
 
-<script>
-function validateMobile() {
-    const mobile = document.getElementById("mobile").value;
-    document.getElementById("mobile").style.borderColor =
-        (mobile.length === 10 && /^[0-9]+$/.test(mobile)) ? "green" : "red";
-}
-
-async function loadPlans() {
-    const operator = document.getElementById("operator").value;
-    const circle = document.getElementById("circle").value;
-    const planType = document.getElementById("planType").value;
-    const plansList = document.getElementById("plansList");
-
-    if (!operator || !circle) {
-        plansList.innerHTML = "<p style='color:red;'>Please select both operator and circle.</p>";
-        return;
-    }
-
-    plansList.innerHTML = "<p class='loading'>Loading plans...</p>";
-
-    let url = `http://127.0.0.1:8000/api/rechargepending`; 
-    if (planType) url += `/${planType}`;
-
-    try {
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                "Content-Type": "application/json",
-                "X-Mclient": "14"
-            }
-        });
-        const result = await response.json();
-
-        if (result.success && result.data.plans.length > 0) {
-            plansList.innerHTML = result.data.plans.map(plan => `
-                <div style="border:1px solid #ccc; padding:10px; margin:10px 0; background:#fff; color:#000;">
-                    <strong>₹${plan.amount}</strong> - ${plan.planName}<br>
-                    <small>${plan.planDescription}</small><br>
-                    <em>Validity: ${plan.validity}</em>
+<div class="row" style="max-width: 100%;">
+    <div class="container" style="margin-top: 1rem; margin-bottom: 2rem;">
+        <div class="d-flex align-items-start user-service-tab">
+            <div class="px-3">
+                <div class="nav flex-column nav-pills me-3" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                    <a class="nav-link active" id="v-pills-home-tab" data-bs-toggle="pill" href="#v-pills-home"
+                        role="tab" aria-controls="v-pills-home" aria-selected="true">Mobile Recharge</a>
+                   
                 </div>
-            `).join("");
-        } else {
-            plansList.innerHTML = `<p style="color:orange;">${result.message?.text || "No plans available."}</p>`;
-        }
-    } catch (error) {
-        console.error("API Error: ", error);
-        plansList.innerHTML = "<p style='color:red;'>Something went wrong while fetching plans.</p>";
-    }
+            </div>
+
+            <div class="tab-content" id="v-pills-tabContent">
+                <div class="row martop ">
+            <div id="entry" class="col-md-4">
+                <div class=" row formobile">
+                    <h4>Mobile Recharge</h4>
+                    <form id="rechargeForm">
+                </div>
+            </div>
+            <div id="divService" class=" martop10"> 
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <form id="rechargeForm">
+                                <div class="row service "> 
+                                <!-- <div class="row formobile"> --> 
+                                    
+                                    <div class="mb-3" style="text-align:left;">
+                                        <label for="customerId" class="form-label">Mobile No.</label>
+                                        <input name="mobile_no" type="tel" class="form-control" id="mobile_no" placeholder="Enter any mobile number" pattern="[0-9]{10}" maxlength="10" required>
+                                        <small class="form-text text-muted">You can recharge any mobile number</small>
+                                    </div>
+                                    <div>
+                                        <label for="cmbService" class="form-label">Select Operator</label>
+                                        <select name="operator" id="operator" class="form-select" required>
+                                        <option value="">-- Select Operator --</option>
+                                        <option value="airtel">AIRTEL</option>
+                                        <option value="jio">Jio</option>
+                                        <option value="vi">VI</option>
+                                        <option value="bsnl">BSNL</option>
+                                         </select>
+                                    </div>
+                                    <div>
+                                        <label for="cmbService" class="form-label">Select Circle</label>
+                                        <select name="service" id="cmbService" class="form-select" required>
+                                            <option value="">-- Select Operator --</option>
+                                            <option value="airtel">Andhra Pradesh</option>
+                                            <option value="bigtv">Delhi</option> 
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="cmbService" class="form-label">All Plan</label>
+                                    <select name="circle" id="circle" class="form-select" required>
+                                        <option value="">-- Select Plan --</option>
+                                        <option value="prepaid">Prepaid</option>
+                                        <option value="postpaid">Postpaid</option>
+                                        <option value="talktime">Talktime</option>
+                                        <option value="validity">Validity</option>
+                                        <!-- Add more circles as needed -->
+                                    </select>
+
+                                    </div>
+                                    <div class="mb-3" style="text-align:left;">
+                                        <label for="amount" class="form-label">Recharge Amount (₹)</label>
+                                        <input name="amount" type="number" class="form-control" id="amount" placeholder="Amount" min="1" max="10000" step="1" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <button type="submit" class="col-12 btn gradient-bg martop10 text-white" id="submitBtn">
+                                            <span id="btnText">Recharge now</span>
+                                            <span id="btnSpinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                        </button>
+                                    </form>
+                                    </div>
+                                </div> 
+                            <div id="alertContainer"></div>
+                        </div>
+                        <div class="col-md-8">
+                            <h5 class="">Recent Recharges</h5>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Date</th>
+                                            <th>Service</th>
+                                            <th>Mobile No.</th>
+                                            <th>Amount</th>
+                                            <th>Transaction ID</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="rechargeTableBody">
+                                        <tr><td colspan="7" class="text-center">Loading...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+</div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div class="toast-container position-fixed top-0 end-0 p-3">
+    <div id="alertToast" class="toast align-items-center" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body" id="toastBody"></div>
+            <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+
+ 
+ 
+<script>
+function showToast(message, type = 'success') {
+    const toastBody = document.getElementById('toastBody');
+    toastBody.innerHTML = message;
+    toastBody.className = type === 'success' ? 'text-success' : 'text-danger';
+    const toast = new bootstrap.Toast(document.getElementById('alertToast'));
+    toast.show();
 }
 
-async function recharge() {
-    const mobile = document.getElementById("mobile").value;
-    const operator = document.getElementById("operator").value;
-    const circle = document.getElementById("circle").value;
-    const planType = document.getElementById("planType").value;
-    const amount = document.getElementById("RechargeAmt").value;
-
-    if (!mobile || mobile.length !== 10 || !/^[0-9]+$/.test(mobile)) {
-        alert("Please enter a valid mobile number.");
-        return;
-    }
-    if (!operator || !circle || !planType || !amount) {
-        alert("Please fill all fields including selecting a plan.");
-        return;
-    }
-
-    alert("Recharge processing (frontend simulation only).\nNo real transaction submitted.");
-    // In production, replace this with an actual API POST call
+function validateMobileInput() {
+    const mobileInput = document.getElementById('mobile_no');
+    mobileInput.addEventListener('input', function() {
+        if (this.value.length === 10 && /^[0-9]+$/.test(this.value)) {
+            this.style.borderColor = "green";
+        } else {
+            this.style.borderColor = "red";
+        }
+    });
 }
 
 function loadRechargeHistory() {
-    const tbody = document.querySelector(".history tbody");
-    // Simulated data (can be replaced with API fetch)
-    const demoData = [
-        { mobile: "9876543210", operator: "Jio", type: "Topup", amount: "149", status: "Success", created_at: "2025-06-09 10:15" },
-        { mobile: "9876543210", operator: "Airtel", type: "Special", amount: "249", status: "Pending", created_at: "2025-06-08 18:40" }
-    ];
-
-    tbody.innerHTML = demoData.map(r => `
-        <tr>
-            <td>${r.mobile}</td>
-            <td>${r.operator}</td>
-            <td>${r.type}</td>
-            <td>₹${r.amount}</td>
-            <td>${r.status}</td>
-            <td>${r.created_at}</td>
-        </tr>
-    `).join('');
+    $.ajax({
+        url: "{{ url('/api/recharge/history') }}",
+        method: "GET",
+        dataType: "json",
+        success: function(response) {
+            let rows = '';
+            if (response.length > 0) {
+                response.forEach(function(item, idx) {
+                    rows += `<tr>
+                        <td>${idx + 1}</td>
+                        <td>${item.created_at}</td>
+                        <td>${item.operator}</td>
+                        <td>${item.mobile_no}</td>
+                        <td>₹${item.amount}</td>
+                        <td>${item.txn_id}</td>
+                        <td>
+                            <span class="badge bg-${item.status === 'Success' ? 'success' : (item.status === 'Pending' ? 'warning' : 'danger')}">
+                                ${item.status}
+                            </span>
+                        </td>
+                    </tr>`;
+                });
+            } else {
+                rows = `<tr><td colspan="7" class="text-center">No recharge history found.</td></tr>`;
+            }
+            $('#rechargeTableBody').html(rows);
+        },
+        error: function() {
+            $('#rechargeTableBody').html('<tr><td colspan="7" class="text-center text-danger">Failed to load history.</td></tr>');
+        }
+    });
 }
 
-window.onload = loadRechargeHistory;
+$(document).ready(function() {
+    validateMobileInput();
+    loadRechargeHistory();
+
+    $('#rechargeForm').on('submit', function(e) {
+        e.preventDefault();
+        $('#submitBtn').prop('disabled', true);
+        $('#btnText').addClass('d-none');
+        $('#btnSpinner').removeClass('d-none');
+
+        $.ajax({
+            url: "{{ url('/api/recharge/submit') }}",
+            method: "POST",
+            data: $(this).serialize(),
+            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+            dataType: "json",
+            success: function(response) {
+                if (response.success) {
+                    showToast('Recharge successful!', 'success');
+                    $('#rechargeForm')[0].reset();
+                    loadRechargeHistory();
+                } else {
+                    showToast(response.message || 'Recharge failed.', 'danger');
+                }
+            },
+            error: function(xhr) {
+                let msg = 'Recharge failed.';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    msg = xhr.responseJSON.message;
+                }
+                showToast(msg, 'danger');
+            },
+            complete: function() {
+                $('#submitBtn').prop('disabled', false);
+                $('#btnText').removeClass('d-none');
+                $('#btnSpinner').addClass('d-none');
+            }
+        });
+    });
+});
 </script>
 
 </body>

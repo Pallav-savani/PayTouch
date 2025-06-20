@@ -53,7 +53,7 @@ $(document).ready(function() {
         const formData = {
             service: $('#cmbService').val().trim(),
             mobile_no: $('#customerId').val().trim(),
-            amount: parseFloat($('#amount').val())
+            amount: parseFloat($(this).find('input[name="amount"]').val())
         };
         $.ajax({
             url: '{{ url("/api/dth") }}',

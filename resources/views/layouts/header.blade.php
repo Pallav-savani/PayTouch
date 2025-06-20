@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head> 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title></title>
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
-    
+    <link rel="stylesheet" href="{{ asset('css/ccbill.css') }}">
+
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
@@ -38,7 +39,8 @@
 
                             </div>
                         </div>
-                    </div>
+                        
+                    </div> 
                     <div class="card position-relative overflow-hidden col-lg-3 col-md-12 col-sm-12 col-xs-12 gradient-bg">
                         <div class="text-center">
                             <h5 class="card-title">Customer Care</h5>
@@ -66,23 +68,31 @@
                     <marquee behavior="" direction="">Welcome TO Pay Touch!</marquee>
                 </div>
                 <div class="main-service-section">
-                    <div class="container-fluid">
-                        <div class="service-title d-flex justify-content-between align-items-center gap-3 flex-wrap">
+                <div class="container-fluid"> 
+                    <div class="service-title d-flex justify-content-between align-items-center gap-3 flex-wrap">
                             <h2>DTH</h2>
+                        <div class="text-end">
+                            <a href="#" class="d-inline-block">
+                                <img height="120px" src="{{ asset('images/bbps.jpg') }}" alt="BBPS Logo" />
+                            </a>
                         </div>
+                    </div>
+
+
                         <div class="row">
+                            <div class="col-auto mt-3"><a href=" {{ route('home')  }}" class="btn btn gradient-bg text-white">Home</a></div>
                             <div class="col-auto mt-3"><a href=" {{ route('dth')  }}" class="btn btn gradient-bg text-white">DTH</a></div>
                             <div class="col-auto mt-3"><a href="{{ route('mobile')  }}" class="btn btn gradient-bg text-white">Mobile Recharge</a></div>
+                            <div class="col-auto mt-3"><a href="#" class="btn btn gradient-bg text-white">Fastag Recharges</a></div> 
+                             <div class="col-auto mt-3"><a href="{{ route('ccbill') }}" class="btn btn gradient-bg text-white">CC Bill Pay</a></div>
                             <div class="col-auto mt-3"><a href="#" class="btn btn gradient-bg text-white">Utility Bills</a></div>
                             <div class="col-auto mt-3"><a href="#" class="btn btn gradient-bg text-white">Reports</a></div>
-                            <div class="col-auto mt-3"><a href="#" class="btn btn gradient-bg text-white">My Account</a></div>
-                            <div class="col-auto mt-3"><a href="{{ route('ccbill') }}" class="btn btn gradient-bg text-white">CC Bill Pay</a></div>
-                            <div class="col-auto mt-3"><a href="{{ route('wallet')  }}" class="btn btn gradient-bg text-white">Load Wallet</a></div>
+                            <div class="col-auto mt-3"><a href="#" class="btn btn gradient-bg text-white">My Account</a></div> 
+                            <div class="col-auto mt-3"><a href="{{ route('wallet.index') }}" class="btn btn gradient-bg text-white">Load Wallet</a></div>
                             <div class="col-auto mt-3"><a href="#" class="btn btn gradient-bg text-white">Flight Booking</a></div>
                             <div class="col-auto mt-3"><a href="#" class="btn btn gradient-bg text-white">Railway Booking</a></div>
                             <div class="col-auto mt-3"><a href="#" class="btn btn gradient-bg text-white">Hotel Booking</a></div>
                             <div class="col-auto mt-3"><a href="#" class="btn btn gradient-bg text-white">Bus Booking</a></div>
-                            <div class="col-auto mt-3"><a href="#" class="btn btn gradient-bg text-white">Fastag Recharges</a></div> 
                         </div>
                         <div class="service-title d-flex justify-content-between align-items-center gap-3 flex-wrap mt-3">
                         <div class="service-prev-btn">
@@ -108,84 +118,56 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
-        $(document).ready(function () {
-            const token = localStorage.getItem("auth_token");
+    $(document).ready(function () {
+        const token = localStorage.getItem("auth_token");
 
-            $.ajax({
-                url: "http://127.0.0.1:8000/api/users",
-                type: "GET",
-                dataType: "json",
-               
-                headers: {
-                    "Authorization": "Bearer " + token,
-               "content-type": "application/json"
-                },
-                
-                
-                success: function (user) {
-                    $("#userInfo").html(`
-                        <table>
-                            <tbody>
-                                <tr>
-                                    <td colspan="2">
-                                        <div class="details">
-                                            <i class="fa fa-user"></i>
-                                            <span>User : ${user.id}</span>
-                                        </div>
-                                    </td>
-                                    <td colspan="8">
-                                        <div class="details">
-                                            <i class="fa fa-user"></i>
-                                            <span>Mobile No. : ${user.mobile}</span>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="details">
-                                            <i class="fa fa-briefcase me-2"></i>
-                                            <span>Regular : </span>
-                                            
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="details">
-                                            <i class="fa fa-percent me-2"></i>
-                                            <span>Disc : </span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="details">
-                                            <i class="fa fa-life-ring me-2"></i>
-                                            <span>O/S : </span>
-                                            <span style="color:green;">0.00</span>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    `);
-                },
-             
-                error: function (xhr) {
-                    console.error("Error fetching user:", xhr);
-                    $(".userInfo").html("<p class='text-danger'>Failed to fetch user info. Check token.</p>");
-                }
-            });   
+        $.ajax({
+            url: "{{ url('/api/user') }}",
+            type: "GET",
+            dataType: "json",
+            headers: {
+                "Authorization": "Bearer " + token,
+                "Content-Type": "application/json"
+            },
+            success: function (user) {
+                $("#userInfo").html(`
+                    <div class="container py-2 text-center">
+                        <div class="d-flex   flex-wrap gap-2 mb-2">
+                            <div class="details">
+                                <i class="fa fa-user me-2"></i>
+                                <strong>User:</strong> ${user.id}
+                            </div>
+                            <div class="details">
+                                <i class="fa fa-mobile me-2"></i>
+                                <strong>Mobile No.:</strong> ${user.mobile}
+                            </div>
+                        </div>
+                        <div class="os-box mt-1">
+                            <i class="fa fa-life-ring me-2"></i>
+                            <strong>O/S:</strong> <span style="color:green;">${user.wallet_balance}</span>
+                        </div>
+                    </div>
+                `);
+            },
+            error: function (xhr) {
+                console.error("Error fetching user:", xhr);
+                $("#userInfo").html("<p class='text-danger'>Failed to fetch user info. Check token.</p>");
+            }
         });
+
+    });
 
     function logout() {
         const token = localStorage.getItem("auth_token");
 
         $.ajax({
-            url: 'http://127.0.0.1:8000/api/logout',
+            url: "{{ url('/api/logout') }}",
             type: 'POST',
             headers: {
                 'Authorization': 'Bearer ' + token
             },
             success: function(res) {
                 alert(res.message);
-                // Optionally redirect to login page
                 window.location.href = '/';
             },
             error: function(xhr) {
@@ -194,7 +176,8 @@
             }
         });
     }
-    </script>
+
+</script>
 
 </body>
 </html>

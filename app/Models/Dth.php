@@ -19,6 +19,8 @@ class Dth extends Model
      * The attributes that are mass assignable.
      */
     protected $fillable = [
+        'user_id',
+        'wallet_id',
         'service',
         'mobile_no',
         'amount',
@@ -57,6 +59,21 @@ class Dth extends Model
         'transaction_id' => 'nullable|string|unique:dth_recharges',
         'status' => 'in:pending,completed,failed'
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function wallet()
+    {
+        return $this->belongsTo(Wallet::class);
+    }
+
+    public function walletTransactions()
+    {
+        return $this->hasMany(WalletTransaction::class, 'reference_id');
+    }
 
     /**
      * Get the service name in uppercase

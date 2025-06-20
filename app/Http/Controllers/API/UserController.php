@@ -18,7 +18,8 @@ class UserController extends Controller
         return response()->json([
             'id' => $user->id,
             'mobile' => $user->mobile,
-            'email' => $user->email
+            'email' => $user->email,
+            'wallet_balance' => $user->wallet_balance ?? 0,
         ]);
     }
 

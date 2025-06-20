@@ -8,6 +8,9 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use App\Models\User;
+use App\Models\Wallet;
+use App\Services\MobiKwikService;
 
 class DthController extends Controller
 {
@@ -131,6 +134,15 @@ class DthController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    private function deductUserBalance(User $user, float $amount): bool
+    {
+        if (($user->wallet_balance ?? 0) >= $amount) {
+            $user->wallet_balance = ($user->wallet_balance ?? 0) - $amount;
+            return $user->save();
+        }
+        return false;
     }
 
     private function generateRandomString($length = 4): string

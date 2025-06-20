@@ -17,7 +17,6 @@ use App\Http\Controllers\API\CcBillPaymentController;
 use App\Http\Controllers\API\MobileRechargeController;
 use App\Http\Controllers\Api\WalletApiController;
 
-
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -28,51 +27,34 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::apiResource('users', UserController::class);
     Route::apiResource('rechargesuccess', RechargeSuccessController::class);    
-     Route::apiResource('rechargefail', RechargeFailController::class); 
-     Route::apiResource('rechargepending', RechargePendingController::class); 
+    Route::apiResource('rechargefail', RechargeFailController::class); 
+    Route::apiResource('rechargepending', RechargePendingController::class); 
 
-     Route::apiResource('rechargeAPIsuccess', RechargeApiSuccessController::class);
+    Route::apiResource('rechargeAPIsuccess', RechargeApiSuccessController::class);
+    Route::apiResource('rechargeAPIpending', RechargeApiPendingController::class); 
+    Route::apiResource('rechargeAPIfail', RechargeApiFailController::class); 
 
-     Route::apiResource('rechargeAPIpending', RechargeApiPendingController::class); 
-     Route::apiResource('rechargeAPIfail', RechargeApiFailController::class); 
-
-
-});
-
-    // Route::get('/wallet', [WalletController::class, 'index'])->name('wallet.index');
-    // Route::post('/wallet/create', [WalletController::class, 'createWallet'])->name('wallet.create');
-    // Route::post('/wallet/add-money', [WalletController::class, 'addMoney'])->name('wallet.add-money');
-    // Route::post('/wallet/transfer', [WalletController::class, 'transferMoney'])->name('wallet.transfer');
-    // Route::get('/wallet/balance', [WalletController::class, 'getBalance'])->name('wallet.balance');
-    // Route::get('/wallet/transactions', [WalletController::class, 'getTransactions'])->name('wallet.transactions');
-
-// Route::middleware(['auth'])->group(function () {
-//     Route::get('/wallet', [APIWalletController::class, 'index'])->name('wallet');
-//     Route::post('/wallet/add-money', [APIWalletController::class, 'addMoney'])->name('wallet.add-money');
-//     Route::post('/wallet/transfer', [APIWalletController::class, 'transferMoney'])->name('wallet.transfer');
-//     Route::post('/wallet/bank-account', [APIWalletController::class, 'addBankAccount'])->name('wallet.add-bank-account');
-//     Route::get('/wallet/transactions', [APIWalletController::class, 'getTransactions'])->name('wallet.transactions');
-//     Route::post('/wallet/sync-balance', [APIWalletController::class, 'syncBalance'])->name('wallet.sync-balance');
-//     Route::get('/wallet/bank-accounts', [APIWalletController::class, 'getBankAccounts'])->name('wallet.bank-accounts');
-//     Route::delete('/wallet/bank-account/{id}', [APIWalletController::class, 'deleteBankAccount'])->name('wallet.delete-bank-account');
-// });
-
-Route::middleware(['auth:sanctum'])->group(function () {
+    // Wallet API Routes
     Route::prefix('wallet')->group(function () {
-        Route::get('balance', [WalletApiController::class, 'getBalance']);
-        Route::post('payment-breakdown', [WalletApiController::class, 'getPaymentBreakdown']);
-        Route::post('process-payment', [WalletApiController::class, 'processPayment'])
-             ->middleware('validate.payment');
-        Route::get('transactions', [WalletApiController::class, 'getTransactionHistory']);
-        Route::get('transaction-status', [WalletApiController::class, 'getTransactionStatus']);
+        Route::get('/', [APIWalletController::class, 'index']);
+        Route::get('/user-data', [APIWalletController::class, 'getUserData']);
+        Route::get('/transactions', [APIWalletController::class, 'getTransactions']);
+        Route::post('/add-money', [APIWalletController::class, 'addMoney']);
+        Route::post('/process-payment', [APIWalletController::class, 'processPayment']);
+        Route::get('/balance', [APIWalletController::class, 'getBalance']);
+        Route::get('/wallet/details', [APIWalletController::class, 'getWalletDetails']);
     });
 });
 
-// Add these routes to your existing routes/api.php file
+// Callback routes (no auth needed)
+Route::prefix('wallet')->group(function () {
+    Route::post('/callback', [APIWalletController::class, 'callback']);
+    Route::post('/payment-callback', [APIWalletController::class, 'paymentCallback']);
+    Route::get('/cancel', [APIWalletController::class, 'cancel']);
+});
 
 // CC Bill Payment Routes
 Route::prefix('cc-bill-payments')->group(function () {
-    // Public routes (with authentication middleware)
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [CcBillPaymentController::class, 'index']);
         Route::post('/', [CcBillPaymentController::class, 'store']);
@@ -80,16 +62,13 @@ Route::prefix('cc-bill-payments')->group(function () {
         Route::get('/user/{userId}', [CcBillPaymentController::class, 'getUserPayments']);
         Route::post('/{id}/retry', [CcBillPaymentController::class, 'retryPayment']);
         
-        // Status-based routes
         Route::get('/status/pending', [CcBillPaymentController::class, 'getPendingPayments']);
         Route::get('/status/failed', [CcBillPaymentController::class, 'getFailedPayments']);
         Route::get('/status/successful', [CcBillPaymentController::class, 'getSuccessfulPayments']);
         
-        // Statistics
         Route::get('/stats/dashboard', [CcBillPaymentController::class, 'getStatistics']);
     });
     
-    // Admin only routes
     Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
         Route::put('/{id}', [CcBillPaymentController::class, 'update']);
         Route::patch('/{id}', [CcBillPaymentController::class, 'update']);
@@ -100,10 +79,8 @@ Route::prefix('cc-bill-payments')->group(function () {
 Route::post('/recharge/submit', [MobileRechargeController::class, 'submit'])->name('recharge.submit');
 Route::get('/recharge/history', [MobileRechargeController::class, 'history'])->name('recharge.history');
 
-
 // DTH Recharge Routes
 Route::prefix('dth')->group(function () {
-    // Get all DTH recharges (with optional filtering and pagination)
     Route::get('/', [DthController::class, 'index']);
     Route::post('/', [DthController::class, 'store']);
     Route::get('/{id}', [DthController::class, 'show']);
@@ -127,5 +104,3 @@ Route::prefix('search-history')->group(function () {
     Route::get('/most-searched', [SearchHistoryController::class, 'mostSearched']);
     Route::delete('/cleanup', [SearchHistoryController::class, 'cleanup']);
 });
-
-

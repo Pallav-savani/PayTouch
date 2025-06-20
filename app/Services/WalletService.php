@@ -10,6 +10,7 @@ use App\Events\WalletTransactionEvent;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Exception;
+use App\Services\MobiKwikService;
 
 class WalletService
 {
@@ -25,25 +26,64 @@ class WalletService
         try {
             DB::beginTransaction();
 
-            // Create local wallet
-            $wallet = Wallet::create([
-                'user_id' => $user->id,
-                'wallet_id' => $this->generateUniqueWalletId($user->id),
-                'balance' => 0,
-                'status' => 'active'
-            ]);
+            // Check if wallet already exists
+            $existingWallet = Wallet::where('user_id', $user->id)->first();
+            if ($existingWallet) {
+                DB::commit();
+                return $existingWallet;
+            }
 
-            // Create MobiKwik wallet
-            $mobikwikResponse = $this->mobikwikService->createWallet([
-                'mobile' => $user->mobile,
+            // Generate unique wallet ID
+            $walletId = $this->generateUniqueWalletId($user->id);
+
+            // Create MobiKwik wallet first
+            $mobikwikData = [
+                'mobile' => $user->mobile ?? $user->phone ?? $user->phone_number ?? null,
                 'email' => $user->email,
-                'name' => $user->name
-            ]);
+                'name' => $user->name ?? ($user->first_name . ' ' . $user->last_name) ?? 'User'
+            ];
+
+            // Clean up name field
+            $mobikwikData['name'] = trim($mobikwikData['name']);
+            if (empty($mobikwikData['name']) || $mobikwikData['name'] === ' ') {
+                $mobikwikData['name'] = 'User';
+            }
+
+            // Validate required fields before making API call
+            if (empty($mobikwikData['email'])) {
+                throw new Exception('User email is required for wallet creation');
+            }
+
+            if (empty($mobikwikData['mobile'])) {
+                Log::warning('User mobile number not found, using default', ['user_id' => $user->id]);
+                $mobikwikData['mobile'] = '9999999999'; // Default mobile for testing
+            }
+
+            $mobikwikResponse = $this->mobikwikService->createWallet($mobikwikData);
+            $mobikwikWalletId = null;
 
             if (isset($mobikwikResponse['walletid'])) {
-                $wallet->update([
-                    'mobikwik_wallet_id' => $mobikwikResponse['walletid']
-                ]);
+                $mobikwikWalletId = $mobikwikResponse['walletid'];
+            }
+
+            // Create local wallet with all fields from migration
+            $wallet = Wallet::create([
+                'user_id' => $user->id,
+                'wallet_id' => $walletId,
+                'balance' => $user->wallet_balance ?? 0.00,
+                'status' => 'active',
+                'mobikwik_wallet_id' => $mobikwikWalletId,
+                'is_kyc_verified' => false,
+                'daily_limit' => 10000.00,
+                'monthly_limit' => 100000.00,
+                'total_loaded' => 0.00,
+                'total_spent' => 0.00,
+                'last_transaction_at' => null
+            ]);
+
+            // Create initial transaction record if user has initial balance
+            if ($user->wallet_balance > 0) {
+                $this->createInitialTransaction($wallet, $user->wallet_balance);
             }
 
             DB::commit();
@@ -51,7 +91,8 @@ class WalletService
             Log::info('Wallet created successfully', [
                 'user_id' => $user->id,
                 'wallet_id' => $wallet->wallet_id,
-                'mobikwik_wallet_id' => $wallet->mobikwik_wallet_id
+                'mobikwik_wallet_id' => $wallet->mobikwik_wallet_id,
+                'initial_balance' => $wallet->balance
             ]);
 
             return $wallet;
@@ -60,9 +101,61 @@ class WalletService
             DB::rollBack();
             Log::error('Wallet creation failed', [
                 'user_id' => $user->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'user_data' => [
+                    'email' => $user->email ?? 'not set',
+                    'mobile' => $user->mobile ?? $user->phone ?? $user->phone_number ?? 'not set',
+                    'name' => $user->name ?? 'not set'
+                ]
             ]);
             throw $e;
+        }
+    }
+
+    public function getOrCreateWallet(User $user): Wallet
+    {
+        $wallet = Wallet::where('user_id', $user->id)->first();
+        
+        if (!$wallet) {
+            $wallet = $this->createWalletForUser($user);
+        }
+        
+        return $wallet;
+    }
+
+    private function createInitialTransaction(Wallet $wallet, float $amount)
+    {
+        try {
+            WalletTransaction::create([
+                'user_id' => $wallet->user_id,
+                'wallet_id' => $wallet->id,
+                'transaction_id' => $this->generateTransactionId(),
+                'type' => 'credit',
+                'amount' => $amount,
+                'balance_before' => 0.00,
+                'balance_after' => $amount,
+                'status' => 'success',
+                'payment_mode' => 'system',
+                'wallet_amount' => $amount,
+                'cash_amount' => 0.00,
+                'description' => 'Initial wallet balance',
+                'reference_id' => 'INIT_' . $wallet->wallet_id,
+                'processed_at' => now()
+            ]);
+
+            // Update wallet totals
+            $wallet->update([
+                'total_loaded' => $amount,
+                'last_transaction_at' => now()
+            ]);
+
+        } catch (Exception $e) {
+            Log::error('Failed to create initial transaction', [
+                'wallet_id' => $wallet->id,
+                'amount' => $amount,
+                'error' => $e->getMessage()
+            ]);
         }
     }
 
@@ -75,6 +168,7 @@ class WalletService
             
             // Create pending transaction
             $transaction = WalletTransaction::create([
+                'user_id' => $wallet->user_id,
                 'wallet_id' => $wallet->id,
                 'transaction_id' => $this->generateTransactionId(),
                 'type' => 'credit',
@@ -82,18 +176,20 @@ class WalletService
                 'balance_before' => $wallet->balance,
                 'balance_after' => $wallet->balance + $amount,
                 'status' => 'pending',
+                'payment_mode' => 'cash',
+                'wallet_amount' => 0,
+                'cash_amount' => $amount,
                 'description' => $description ?? 'Money added to wallet',
                 'reference_id' => $orderId
             ]);
 
             // Call MobiKwik API
             $mobikwikResponse = $this->mobikwikService->addMoneyToWallet(
-                $wallet->mobikwik_wallet_id,
-                $amount,
-                $orderId
+                $wallet->user,
+                $amount
             );
 
-            if (isset($mobikwikResponse['paymenturl'])) {
+            if ($mobikwikResponse['success']) {
                 $transaction->update([
                     'gateway_response' => $mobikwikResponse
                 ]);
@@ -101,13 +197,13 @@ class WalletService
                 DB::commit();
                 return [
                     'success' => true,
-                    'payment_url' => $mobikwikResponse['paymenturl'],
+                    'payment_url' => $mobikwikResponse['redirect_url'],
                     'transaction_id' => $transaction->transaction_id,
                     'order_id' => $orderId
                 ];
             }
 
-            throw new Exception('Invalid MobiKwik response');
+            throw new Exception($mobikwikResponse['message'] ?? 'Invalid MobiKwik response');
 
         } catch (Exception $e) {
             DB::rollBack();
@@ -120,172 +216,39 @@ class WalletService
         }
     }
 
-    public function transferMoney(Wallet $fromWallet, $toWalletId, $amount, $description = null)
+    public function updateWalletBalance(Wallet $wallet, float $amount, string $type = 'credit')
     {
         try {
             DB::beginTransaction();
 
-            $toWallet = Wallet::where('wallet_id', $toWalletId)->first();
-            if (!$toWallet) {
-                throw new Exception('Recipient wallet not found');
-            }
+            $oldBalance = $wallet->balance;
+            $newBalance = $type === 'credit' ? $oldBalance + $amount : $oldBalance - $amount;
 
-            if (!$fromWallet->canTransact($amount)) {
-                throw new Exception('Insufficient balance or wallet inactive');
-            }
-
-            $orderId = $this->generateOrderId();
-
-            // Create debit transaction for sender
-            $debitTransaction = WalletTransaction::create([
-                'wallet_id' => $fromWallet->id,
-                'transaction_id' => $this->generateTransactionId(),
-                'type' => 'transfer_out',
-                'amount' => $amount,
-                'balance_before' => $fromWallet->balance,
-                'balance_after' => $fromWallet->balance - $amount,
-                'status' => 'pending',
-                'description' => $description ?? "Transfer to {$toWallet->wallet_id}",
-                'reference_id' => $orderId
+            // Update wallet balance
+            $wallet->update([
+                'balance' => $newBalance,
+                'total_loaded' => $type === 'credit' ? $wallet->total_loaded + $amount : $wallet->total_loaded,
+                'total_spent' => $type === 'debit' ? $wallet->total_spent + $amount : $wallet->total_spent,
+                'last_transaction_at' => now()
             ]);
 
-            // Create credit transaction for receiver
-            $creditTransaction = WalletTransaction::create([
-                'wallet_id' => $toWallet->id,
-                'transaction_id' => $this->generateTransactionId(),
-                'type' => 'transfer_in',
-                'amount' => $amount,
-                'balance_before' => $toWallet->balance,
-                'balance_after' => $toWallet->balance + $amount,
-                'status' => 'pending',
-                'description' => $description ?? "Transfer from {$fromWallet->wallet_id}",
-                'reference_id' => $orderId
+            // Update user wallet balance
+            $wallet->user->update([
+                'wallet_balance' => $newBalance
             ]);
 
-            // Call MobiKwik transfer API
-            $mobikwikResponse = $this->mobikwikService->transferMoney(
-                $fromWallet->mobikwik_wallet_id,
-                $toWallet->mobikwik_wallet_id,
-                $amount,
-                $orderId
-            );
-
-            if (isset($mobikwikResponse['status']) && $mobikwikResponse['status'] === 'SUCCESS') {
-                // Update balances
-                $fromWallet->update([
-                    'balance' => $fromWallet->balance - $amount,
-                    'total_spent' => $fromWallet->total_spent + $amount,
-                    'last_transaction_at' => now()
-                ]);
-
-                $toWallet->update([
-                    'balance' => $toWallet->balance + $amount,
-                    'total_loaded' => $toWallet->total_loaded + $amount,
-                    'last_transaction_at' => now()
-                ]);
-
-                // Update transactions
-                $debitTransaction->update([
-                    'status' => 'completed',
-                    'mobikwik_transaction_id' => $mobikwikResponse['transactionid'] ?? null,
-                    'gateway_response' => $mobikwikResponse,
-                    'processed_at' => now()
-                ]);
-
-                $creditTransaction->update([
-                    'status' => 'completed',
-                    'mobikwik_transaction_id' => $mobikwikResponse['transactionid'] ?? null,
-                    'gateway_response' => $mobikwikResponse,
-                    'processed_at' => now()
-                ]);
-
-                // Fire events
-                event(new WalletTransactionEvent($debitTransaction));
-                event(new WalletTransactionEvent($creditTransaction));
-
-                DB::commit();
-
-                return [
-                    'success' => true,
-                    'message' => 'Transfer completed successfully',
-                    'transaction_id' => $debitTransaction->transaction_id
-                ];
-            }
-
-            throw new Exception('Transfer failed: ' . ($mobikwikResponse['message'] ?? 'Unknown error'));
+            DB::commit();
+            return true;
 
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error('Transfer failed', [
-                'from_wallet' => $fromWallet->wallet_id,
-                'to_wallet' => $toWalletId,
+            Log::error('Failed to update wallet balance', [
+                'wallet_id' => $wallet->id,
                 'amount' => $amount,
+                'type' => $type,
                 'error' => $e->getMessage()
             ]);
-            throw $e;
-        }
-    }
-
-    public function addBankAccount(Wallet $wallet, array $bankData)
-    {
-        try {
-            // Set other accounts as non-primary if this is primary
-            if ($bankData['is_primary'] ?? false) {
-                WalletBankAccount::where('wallet_id', $wallet->id)
-                    ->update(['is_primary' => false]);
-            }
-
-            $bankAccount = WalletBankAccount::create([
-                'wallet_id' => $wallet->id,
-                'account_holder_name' => $bankData['account_holder_name'],
-                'account_number' => $bankData['account_number'],
-                'ifsc_code' => $bankData['ifsc_code'],
-                'bank_name' => $bankData['bank_name'],
-                'account_type' => $bankData['account_type'] ?? 'savings',
-                'is_primary' => $bankData['is_primary'] ?? false
-            ]);
-
-            Log::info('Bank account added', [
-                'wallet_id' => $wallet->id,
-                'bank_account_id' => $bankAccount->id
-            ]);
-
-            return $bankAccount;
-
-        } catch (Exception $e) {
-            Log::error('Add bank account failed', [
-                'wallet_id' => $wallet->id,
-                'error' => $e->getMessage()
-            ]);
-            throw $e;
-        }
-    }
-
-    public function syncWalletBalance(Wallet $wallet)
-    {
-        try {
-            if (!$wallet->mobikwik_wallet_id) {
-                throw new Exception('MobiKwik wallet ID not found');
-            }
-
-            $balanceResponse = $this->mobikwikService->getWalletBalance($wallet->mobikwik_wallet_id);
-
-            if (isset($balanceResponse['balance'])) {
-                $wallet->update([
-                    'balance' => $balanceResponse['balance']
-                ]);
-
-                return $balanceResponse['balance'];
-            }
-
-            throw new Exception('Invalid balance response');
-
-        } catch (Exception $e) {
-            Log::error('Balance sync failed', [
-                'wallet_id' => $wallet->id,
-                'error' => $e->getMessage()
-            ]);
-            throw $e;
+            return false;
         }
     }
 

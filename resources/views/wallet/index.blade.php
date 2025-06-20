@@ -1,4 +1,4 @@
-@extends('layouts.header')
+@include('layouts.header')
 
 <div class="container">
     <div class="row">
@@ -8,20 +8,15 @@
                     <h4>My Wallet</h4>
                 </div>
                 <div class="card-body">
-                    @if(session('success'))
-                        <div class="alert alert-success">{{ session('success') }}</div>
-                    @endif
-                    
-                    @if(session('error'))
-                        <div class="alert alert-danger">{{ session('error') }}</div>
-                    @endif
+                    <!-- Alert container -->
+                    <div id="alert-container"></div>
 
                     <div class="row mb-4">
                         <div class="col-md-6">
                             <div class="card bg-primary text-white">
                                 <div class="card-body">
                                     <h5>Wallet Balance</h5>
-                                    <h3>₹{{ number_format($user->wallet_balance ?? 0, 2) }}</h3>
+                                    <h3 id="wallet-balance">₹0.00</h3>
                                 </div>
                             </div>
                         </div>
@@ -29,8 +24,7 @@
                             <div class="card">
                                 <div class="card-body">
                                     <h5>Add Money to Wallet</h5>
-                                    <form action="{{ route('wallet.add-money') }}" method="POST">
-                                        @csrf
+                                    <form id="add-money-form">
                                         <div class="form-group">
                                             <input type="number" name="amount" class="form-control" 
                                                    placeholder="Enter amount" min="10" max="50000" required>
@@ -47,12 +41,11 @@
                             <h5>Make Payment</h5>
                         </div>
                         <div class="card-body">
-                            <form id="payment-form" action="{{ route('wallet.process-payment') }}" method="POST">
-                                @csrf
+                            <form id="payment-form">
                                 <div class="form-group">
                                     <label>Amount</label>
                                     <input type="number" name="amount" class="form-control" 
-                                           placeholder="Enter payment amount" min="0" required>
+                                           placeholder="Enter payment amount" min="1" required>
                                 </div>
                                 <div class="form-group">
                                     <label>Description</label>
@@ -70,7 +63,7 @@
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
-                                <table class="table">
+                                <table class="table" id="transactions-table">
                                     <thead>
                                         <tr>
                                             <th>Date</th>
@@ -82,45 +75,14 @@
                                             <th>Description</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                    @if(isset($transactions))
-                                        @forelse($transactions as $transaction)
+                                    <tbody id="transactions-tbody">
                                         <tr>
-                                            <td>{{ $transaction->created_at->format('d/m/Y H:i') }}</td>
-                                            <td>{{ $transaction->transaction_id }}</td>
-                                            <td>
-                                                <span class="badge badge-{{ $transaction->type === 'credit' ? 'success' : 'danger' }}">
-                                                    {{ ucfirst($transaction->type) }}
-                                                </span>
-                                            </td>
-                                            <td>₹{{ number_format($transaction->amount, 2) }}</td>
-                                            <td>{{ ucfirst($transaction->payment_mode) }}</td>
-                                            <td>
-                                                <span class="badge badge-{{ 
-                                                    $transaction->status === 'success' ? 'success' : 
-                                                    ($transaction->status === 'failed' ? 'danger' : 'warning') 
-                                                }}">
-                                                    {{ ucfirst($transaction->status) }}
-                                                </span>
-                                            </td>
-                                            <td>{{ $transaction->description }}</td>
+                                            <td colspan="7" class="text-center">Loading transactions...</td>
                                         </tr>
-                                        @empty
-                                        <tr>
-                                            <td colspan="7" class="text-center">No transactions found</td>
-                                        </tr>
-                                        @endforelse
-                                    @else
-                                        <tr>
-                                            <td colspan="7" class="text-center">No transactions found</td>
-                                        </tr>
-                                    @endif
                                     </tbody>
                                 </table>
                             </div>
-                            @if(isset($transactions))
-                                {{ $transactions->links() }}
-                            @endif
+                            <div id="pagination-container"></div>
                         </div>
                     </div>
                 </div>
@@ -129,184 +91,269 @@
     </div>
 </div>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-document.getElementById('payment-form').addEventListener('submit', function(e) {
-    e.preventDefault();
+$(document).ready(function() {
+    // Get bearer token from localStorage or meta tag
+    const bearerToken = localStorage.getItem('auth_token') || $('meta[name="api-token"]').attr('content');
     
-    const formData = new FormData(this);
-    const csrfToken = this.querySelector('input[name="_token"]').value;
-    const submitBtn = this.querySelector('button[type="submit"]');
-    const originalText = submitBtn.textContent;
-    
-    // Show loading state
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Processing...';
-    
-    fetch('{{ route("wallet.process-payment") }}', {
-        method: 'POST',
-        body: formData,
+    // Set default AJAX headers
+    $.ajaxSetup({
         headers: {
-            'X-CSRF-TOKEN': csrfToken,
+            'Authorization': 'Bearer ' + bearerToken,
             'Accept': 'application/json',
+            'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest'
         }
-    })
-    .then(response => {
-        // Check if response is ok
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        // Check if response is JSON
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-            throw new Error('Server returned non-JSON response');
-        }
-        
-        return response.json();
-    })
-    .then(data => {
-        if (data.success) {
-            if (data.redirect_url) {
-                showMessage('Redirecting to payment gateway...', 'info');
-                setTimeout(() => {
-                    window.location.href = data.redirect_url;
-                }, 1000);
-            } else {
-                showMessage(data.message || 'Payment processed successfully', 'success');
-                setTimeout(() => location.reload(), 2000);
-            }
-        } else {
-            showMessage(data.message || 'Payment failed', 'error');
-        }
-    })
-    .catch(error => {
-        console.error('Payment error:', error);
-        showMessage('Payment processing failed. Please try again.', 'error');
-    })
-    .finally(() => {
-        // Reset button state
-        submitBtn.disabled = false;
-        submitBtn.textContent = originalText;
     });
-});
 
-// Helper function to show messages
-function showMessage(message, type) {
-    // Remove existing alerts
-    const existingAlerts = document.querySelectorAll('.alert-temp');
-    existingAlerts.forEach(alert => alert.remove());
-    
-    // Create new alert
-    const alertDiv = document.createElement('div');
-    alertDiv.className = `alert alert-${type === 'error' ? 'danger' : (type === 'info' ? 'info' : 'success')} alert-dismissible alert-temp`;
-    alertDiv.innerHTML = `
-        ${message}
-        <button type="button" class="close" onclick="this.parentElement.remove()">&times;</button>
-    `;
-    
-    // Insert at the top of the card body
-    const cardBody = document.querySelector('.card-body');
-    cardBody.insertBefore(alertDiv, cardBody.firstChild);
-    
-    // Auto-remove after 5 seconds
-    setTimeout(() => {
-        if (alertDiv.parentNode) {
-            alertDiv.remove();
-        }
-    }, 5000);
-}
+    // Load initial data
+    loadUserData();
+    loadTransactions();
 
-// Auto-redirect payment handler
-class PaymentHandler {
-    constructor() {
-        this.init();
-    }
+    // Add Money Form Handler
+    $('#add-money-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const amount = $(this).find('input[name="amount"]').val();
+        const submitBtn = $(this).find('button[type="submit"]');
+        const originalText = submitBtn.text();
+        
+        // Show loading state
+        submitBtn.prop('disabled', true).text('Processing...');
+        
+        $.ajax({
+            url: '/api/wallet/add-money',
+            method: 'POST',
+            data: JSON.stringify({ amount: parseFloat(amount) }),
+            success: function(response) {
+                if (response.success) {
+                    if (response.redirect_url) {
+                        showMessage('Redirecting to payment gateway...', 'info');
+                        setTimeout(() => {
+                            window.location.href = response.redirect_url;
+                        }, 1000);
+                    } else {
+                        showMessage(response.message, 'success');
+                        loadUserData(); // Refresh balance
+                        loadTransactions(); // Refresh transactions
+                        $('#add-money-form')[0].reset();
+                    }
+                } else {
+                    showMessage(response.message || 'Failed to add money', 'error');
+                }
+            },
+            error: function(xhr) {
+                const response = xhr.responseJSON;
+                if (xhr.status === 401) {
+                    showMessage('Please login to continue', 'error');
+                    // Redirect to login or refresh token
+                } else {
+                    showMessage(response?.message || 'Failed to add money', 'error');
+                }
+            },
+            complete: function() {
+                submitBtn.prop('disabled', false).text(originalText);
+            }
+        });
+    });
 
-    init() {
-        this.bindEvents();
-    }
+    // Payment Form Handler
+    $('#payment-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = {
+            amount: parseFloat($(this).find('input[name="amount"]').val()),
+            description: $(this).find('input[name="description"]').val()
+        };
+        
+        const submitBtn = $(this).find('button[type="submit"]');
+        const originalText = submitBtn.text();
+        
+        // Show loading state
+        submitBtn.prop('disabled', true).text('Processing...');
+        
+        $.ajax({
+            url: '/api/wallet/process-payment',
+            method: 'POST',
+            data: JSON.stringify(formData),
+            success: function(response) {
+                if (response.success) {
+                    if (response.redirect_required && response.redirect_url) {
+                        showMessage('Redirecting to payment gateway...', 'info');
+                        setTimeout(() => {
+                            window.location.href = response.redirect_url;
+                        }, 1000);
+                    } else {
+                        showMessage(response.message || 'Payment processed successfully', 'success');
+                        loadUserData(); // Refresh balance
+                        loadTransactions(); // Refresh transactions
+                        $('#payment-form')[0].reset();
+                    }
+                } else {
+                    showMessage(response.message || 'Payment failed', 'error');
+                }
+            },
+            error: function(xhr) {
+                const response = xhr.responseJSON;
+                if (xhr.status === 401) {
+                    showMessage('Please login to continue', 'error');
+                } else if (xhr.status === 422) {
+                    // Validation errors
+                    let errorMessage = 'Validation failed: ';
+                    if (response.errors) {
+                        const errors = Object.values(response.errors).flat();
+                        errorMessage += errors.join(', ');
+                    } else {
+                        errorMessage += response.message || 'Invalid input';
+                    }
+                    showMessage(errorMessage, 'error');
+                } else {
+                    showMessage(response?.message || 'Payment processing failed', 'error');
+                }
+            },
+            complete: function() {
+                submitBtn.prop('disabled', false).text(originalText);
+            }
+        });
+    });
 
-    bindEvents() {
-        document.addEventListener('DOMContentLoaded', () => {
-            const paymentForms = document.querySelectorAll('.payment-form');
-            paymentForms.forEach(form => {
-                form.addEventListener('submit', this.handlePaymentSubmit.bind(this));
-            });
+    // Load User Data Function
+    function loadUserData() {
+        $.ajax({
+            url: '/api/wallet/user-data',
+            method: 'GET',
+            success: function(response) {
+                if (response.success) {
+                    const user = response.data;
+                    $('#wallet-balance').text('₹' + parseFloat(user.wallet_balance || 0).toFixed(2));
+                }
+            },
+            error: function(xhr) {
+                if (xhr.status === 401) {
+                    showMessage('Please login to continue', 'error');
+                    // Redirect to login page
+                    setTimeout(() => {
+                        window.location.href = '/login';
+                    }, 2000);
+                }
+            }
         });
     }
 
-    async handlePaymentSubmit(event) {
-        event.preventDefault();
-        
-        const form = event.target;
-        const submitBtn = form.querySelector('button[type="submit"]');
-        const originalText = submitBtn.textContent;
-        
-        // Show loading state
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Processing...';
-        
-        try {
-            const formData = new FormData(form);
-            const csrfToken = form.querySelector('input[name="_token"]')?.value;
-            
-            const response = await fetch(form.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRF-TOKEN': csrfToken,
-                    'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
+    // Load Transactions Function
+    function loadTransactions(page = 1) {
+        $.ajax({
+            url: '/api/wallet/transactions?page=' + page,
+            method: 'GET',
+            success: function(response) {
+                if (response.success) {
+                    const transactions = response.data;
+                    renderTransactions(transactions.data);
+                    renderPagination(transactions);
                 }
-            });
-            
-            // Check if response is ok
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+            },
+            error: function(xhr) {
+                $('#transactions-tbody').html('<tr><td colspan="7" class="text-center text-danger">Failed to load transactions</td></tr>');
             }
-            
-            // Check if response is JSON
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                throw new Error('Server returned non-JSON response');
-            }
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                if (data.redirect_url) {
-                    // Show redirect message
-                    this.showMessage('Redirecting to payment gateway...', 'info');
-                    
-                    // Redirect after short delay
-                    setTimeout(() => {
-                        window.location.href = data.redirect_url;
-                    }, 1000);
-                } else {
-                    this.showMessage(data.message || 'Payment processed successfully', 'success');
-                    setTimeout(() => location.reload(), 2000);
-                }
-            } else {
-                this.showMessage(data.message || 'Payment failed', 'error');
-            }
-            
-        } catch (error) {
-            console.error('Payment error:', error);
-            this.showMessage('Payment processing failed. Please try again.', 'error');
-        } finally {
-            // Reset button state
-            submitBtn.disabled = false;
-            submitBtn.textContent = originalText;
-        }
+        });
     }
-    
-    showMessage(message, type) {
-        // Use the global showMessage function
-        showMessage(message, type);
-    }
-}
 
-// Initialize payment handler
-new PaymentHandler();
+    // Render Transactions Function
+    function renderTransactions(transactions) {
+        const tbody = $('#transactions-tbody');
+        tbody.empty();
+
+        if (transactions.length === 0) {
+            tbody.html('<tr><td colspan="7" class="text-center">No transactions found</td></tr>');
+            return;
+        }
+
+        transactions.forEach(function(transaction) {
+            const date = new Date(transaction.created_at).toLocaleDateString('en-GB') + ' ' + 
+                        new Date(transaction.created_at).toLocaleTimeString('en-GB', {hour: '2-digit', minute:'2-digit'});
+            
+            const typeClass = transaction.type === 'credit' ? 'success' : 'danger';
+            const statusClass = transaction.status === 'success' ? 'success' : 
+                               (transaction.status === 'failed' ? 'danger' : 'warning');
+
+            const row = `
+                <tr>
+                    <td>${date}</td>
+                    <td>${transaction.transaction_id || 'N/A'}</td>
+                    <td><span class="badge badge-${typeClass}">${transaction.type ? transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1) : 'N/A'}</span></td>
+                    <td>₹${parseFloat(transaction.amount || 0).toFixed(2)}</td>
+                    <td>${transaction.payment_mode ? transaction.payment_mode.charAt(0).toUpperCase() + transaction.payment_mode.slice(1) : 'N/A'}</td>
+                    <td><span class="badge badge-${statusClass}">${transaction.status ? transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1) : 'N/A'}</span></td>
+                    <td>${transaction.description || 'N/A'}</td>
+                </tr>
+            `;
+            tbody.append(row);
+        });
+    }
+
+    // Render Pagination Function
+    function renderPagination(paginationData) {
+        const container = $('#pagination-container');
+        container.empty();
+
+        if (paginationData.last_page <= 1) return;
+
+        let paginationHtml = '<nav><ul class="pagination justify-content-center">';
+
+        // Previous button
+        if (paginationData.current_page > 1) {
+            paginationHtml += `<li class="page-item"><a class="page-link" href="#" data-page="${paginationData.current_page - 1}">Previous</a></li>`;
+        }
+
+        // Page numbers
+        for (let i = 1; i <= paginationData.last_page; i++) {
+                        const activeClass = i === paginationData.current_page ? 'active' : '';
+            paginationHtml += `<li class="page-item ${activeClass}"><a class="page-link" href="#" data-page="${i}">${i}</a></li>`;
+        }
+
+        // Next button
+        if (paginationData.current_page < paginationData.last_page) {
+            paginationHtml += `<li class="page-item"><a class="page-link" href="#" data-page="${paginationData.current_page + 1}">Next</a></li>`;
+        }
+
+        paginationHtml += '</ul></nav>';
+        container.html(paginationHtml);
+
+        // Bind pagination click events
+        container.find('.page-link').on('click', function(e) {
+            e.preventDefault();
+            const page = $(this).data('page');
+            loadTransactions(page);
+        });
+    }
+
+    // Show Message Function
+    function showMessage(message, type) {
+        // Remove existing alerts
+        $('#alert-container .alert-temp').remove();
+        
+        // Create new alert
+        const alertClass = type === 'error' ? 'danger' : (type === 'info' ? 'info' : 'success');
+        const alertHtml = `
+            <div class="alert alert-${alertClass} alert-dismissible alert-temp">
+                ${message}
+                <button type="button" class="close" onclick="$(this).parent().remove()">&times;</button>
+            </div>
+        `;
+        
+        $('#alert-container').prepend(alertHtml);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            $('#alert-container .alert-temp').first().remove();
+        }, 5000);
+    }
+
+    // Auto-refresh balance every 30 seconds
+    setInterval(function() {
+        loadUserData();
+    }, 2000);
+});
 </script>
+
