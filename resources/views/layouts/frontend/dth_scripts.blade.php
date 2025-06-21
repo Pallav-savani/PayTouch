@@ -3,6 +3,7 @@
 $(document).ready(function() {
     // Load recharge records on page load
     fetchRechargeRecords();
+    
     // Form validation
     function validateForm() {
         const service = $('#cmbService').val();
@@ -22,6 +23,41 @@ $(document).ready(function() {
         }
         return true;
     }
+
+    // Check wallet balance function
+    function checkWalletBalance(amount) {
+        return new Promise((resolve, reject) => {
+            const token = localStorage.getItem("auth_token");
+            
+            $.ajax({
+                url: '{{ url("/api/wallet/balance") }}',
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        const walletBalance = parseFloat(response.data.balance || 0);
+                        const rechargeAmount = parseFloat(amount);
+                        
+                        if (walletBalance >= rechargeAmount) {
+                            resolve(true);
+                        } else {
+                            resolve(false);
+                        }
+                    } else {
+                        reject('Failed to fetch wallet balance');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    reject('Error checking wallet balance: ' + error);
+                }
+            });
+        });
+    }
+    
     // Show toast notification function
     function showToast(message, type = 'info', title = null) {
         const toast = $('#alertToast');
@@ -43,89 +79,159 @@ $(document).ready(function() {
         const bsToast = new bootstrap.Toast(toast[0], { autohide: true, delay: 5000 });
         bsToast.show();
     }
+
     // Handle form submission
     $('#rechargeForm').on('submit', function(e) {
         e.preventDefault();
         if (!validateForm()) { return; }
+
+        const amount = parseFloat($('#amount').val());
+        
         $('#submitBtn').prop('disabled', true);
-        $('#btnText').text('Processing...');
+        $('#btnText').text('Checking Balance...');
         $('#btnSpinner').removeClass('d-none');
-        const formData = {
-            service: $('#cmbService').val().trim(),
-            mobile_no: $('#customerId').val().trim(),
-            amount: parseFloat($(this).find('input[name="amount"]').val())
-        };
-        $.ajax({
-            url: '{{ url("/api/dth") }}',
-            method: 'POST',
-            contentType: 'application/json',
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
-                'Accept': 'application/json'
-            },
-            data: JSON.stringify(formData),
-            timeout: 30000,
-            success: function(response) {
-                if (response.status === 'success' && response.data && response.data.status === 'success') {
-                    showToast('Recharge completed successfully!', 'success', 'Recharge Success');
-                    $('#rechargeForm')[0].reset();
-                } else if (response.status === 'failed' || (response.data && response.data.status === 'failed')) {
-                    showToast('Recharge failed. Please try again.', 'error', 'Recharge Failed');
-                } else if (response.status === 'success' && response.data && response.data.status === 'pending') {
-                    showToast('Recharge initiated successfully! Status: Pending', 'warning', 'Recharge Pending');
-                    $('#rechargeForm')[0].reset();
-                } else {
-                    showToast('Recharge request processed. Please check the table below for status.', 'warning', 'Status Unclear');
+
+        // Check wallet balance first
+        checkWalletBalance(amount)
+            .then(function(hasSufficientBalance) {
+                if (!hasSufficientBalance) {
+                    // Insufficient balance - redirect to wallet page
+                    showToast('Insufficient wallet balance. Redirecting to wallet page...', 'warning', 'Insufficient Balance');
+                    
+                    setTimeout(function() {
+                        window.location.href = '{{ route("wallet") }}';
+                    }, 2000);
+                    
+                    return;
                 }
-                setTimeout(function() { 
-                    fetchRechargeRecords(); 
-                    fetchPendingTransactions(); // Refresh pending transactions
-                    fetchFailedTransactions(); // Add this line to also refresh failed transactions
-                }, 1000);
-            },
-            error: function(xhr, status, error) {
-                let errorMessage = 'Failed to process recharge. Please try again.';
-                let shouldRefreshTable = false;
-                if (xhr.status === 500) {
-                    errorMessage = 'Server error occurred. Recharge marked as failed.';
-                    shouldRefreshTable = true;
-                } else if (xhr.status === 422) {
-                    if (xhr.responseJSON && xhr.responseJSON.errors) {
-                        const errors = xhr.responseJSON.errors;
-                        errorMessage = Object.values(errors).flat().join(', ');
-                    } else if (xhr.responseJSON && xhr.responseJSON.message) {
-                        errorMessage = xhr.responseJSON.message;
+
+                // Sufficient balance - proceed with recharge
+                $('#btnText').text('Processing...');
+                
+                const formData = {
+                    service: $('#cmbService').val().trim(),
+                    mobile_no: $('#customerId').val().trim(),
+                    amount: amount
+                };
+
+                const token = localStorage.getItem("auth_token");
+
+                $.ajax({
+                    url: '{{ url("/api/dth") }}',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                        'Authorization': 'Bearer ' + token,
+                        'Accept': 'application/json'
+                    },
+                    data: JSON.stringify(formData),
+                    timeout: 30000,
+                    success: function(response) {
+                        if (response.status === 'success' && response.data && response.data.status === 'success') {
+                            showToast('Recharge completed successfully!', 'success', 'Recharge Success');
+                            $('#rechargeForm')[0].reset();
+                            
+                            // Refresh wallet balance immediately
+                            if (typeof window.refreshUserWalletBalance === 'function') {
+                                window.refreshUserWalletBalance();
+                            }
+                        } else if (response.status === 'failed' || (response.data && response.data.status === 'failed')) {
+                            showToast('Recharge failed. Please try again.', 'error', 'Recharge Failed');
+                            
+                            // Refresh wallet balance (amount might have been refunded)
+                            if (typeof window.refreshUserWalletBalance === 'function') {
+                                window.refreshUserWalletBalance();
+                            }
+                        } else if (response.status === 'success' && response.data && response.data.status === 'pending') {
+                            showToast('Recharge initiated successfully! Status: Pending', 'warning', 'Recharge Pending');
+                            $('#rechargeForm')[0].reset();
+                            
+                            // Refresh wallet balance (amount has been deducted)
+                            if (typeof window.refreshUserWalletBalance === 'function') {
+                                window.refreshUserWalletBalance();
+                            }
+                        } else {
+                            showToast('Recharge request processed. Please check the table below for status.', 'warning', 'Status Unclear');
+                            
+                            // Refresh wallet balance
+                            if (typeof window.refreshUserWalletBalance === 'function') {
+                                window.refreshUserWalletBalance();
+                            }
+                        }
+                        setTimeout(function() { 
+                            fetchRechargeRecords(); 
+                            fetchPendingTransactions();
+                            fetchFailedTransactions();
+                        }, 1000);
+                    },
+                    error: function(xhr, status, error) {
+                        let errorMessage = 'Failed to process recharge. Please try again.';
+                        let shouldRefreshTable = false;
+                        let shouldRefreshBalance = false;
+                        
+                        if (xhr.status === 500) {
+                            errorMessage = 'Server error occurred. Recharge marked as failed.';
+                            shouldRefreshTable = true;
+                            shouldRefreshBalance = true;
+                        } else if (xhr.status === 422) {
+                            if (xhr.responseJSON && xhr.responseJSON.errors) {
+                                const errors = xhr.responseJSON.errors;
+                                errorMessage = Object.values(errors).flat().join(', ');
+                            } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                                errorMessage = xhr.responseJSON.message;
+                                // Check if it's insufficient balance error
+                                if (errorMessage.includes('Insufficient wallet balance')) {
+                                    shouldRefreshBalance = true;
+                                }
+                            }
+                        } else if (xhr.status === 0) {
+                            errorMessage = 'Network error. Please check your internet connection.';
+                        } else if (status === 'timeout') {
+                            errorMessage = 'Request timeout. Please check your recharge history.';
+                            shouldRefreshTable = true;
+                            shouldRefreshBalance = true;
+                        } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMessage = xhr.responseJSON.message;
+                        }
+                        showToast(errorMessage, 'error', 'Recharge Failed');
+                        
+                        if (shouldRefreshBalance && typeof window.refreshUserWalletBalance === 'function') {
+                            window.refreshUserWalletBalance();
+                        }
+                        
+                        if (shouldRefreshTable) {
+                            setTimeout(function() { 
+                                fetchRechargeRecords(); 
+                                fetchPendingTransactions();
+                                fetchFailedTransactions();
+                            }, 1500);
+                        }
+                    },
+                    complete: function() {
+                        $('#submitBtn').prop('disabled', false);
+                        $('#btnText').text('Proceed to Recharge');
+                        $('#btnSpinner').addClass('d-none');
                     }
-                } else if (xhr.status === 0) {
-                    errorMessage = 'Network error. Please check your internet connection.';
-                } else if (status === 'timeout') {
-                    errorMessage = 'Request timeout. Please check your recharge history.';
-                    shouldRefreshTable = true;
-                } else if (xhr.responseJSON && xhr.responseJSON.message) {
-                    errorMessage = xhr.responseJSON.message;
-                }
-                showToast(errorMessage, 'error', 'Recharge Failed');
-                if (shouldRefreshTable) {
-                    setTimeout(function() { 
-                        fetchRechargeRecords(); 
-                        fetchPendingTransactions();
-                        fetchFailedTransactions(); // Add this line
-                    }, 1500);
-                }
-            },
-            complete: function() {
+                });
+            })
+            .catch(function(error) {
+                showToast('Error checking wallet balance: ' + error, 'error', 'Balance Check Failed');
                 $('#submitBtn').prop('disabled', false);
                 $('#btnText').text('Proceed to Recharge');
                 $('#btnSpinner').addClass('d-none');
-            }
-        });
+            });
     });
+
     // Function to fetch and display recharge records
     function fetchRechargeRecords() {
+        const token = localStorage.getItem("auth_token");
+        
         $.ajax({
             url: '{{ url("/api/dth") }}',
             method: 'GET',
             headers: {
+                'Authorization': 'Bearer ' + token,
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
@@ -183,6 +289,7 @@ $(document).ready(function() {
             }
         });
     }
+
     // Utility to return Bootstrap class for status
     function getStatusClass(status) {
         switch (status) {
@@ -198,6 +305,7 @@ $(document).ready(function() {
                 return 'bg-warning';
         }
     }
+
     // Set default dates for report
     setDefaultReportDates();
     function setDefaultReportDates() {
@@ -206,9 +314,11 @@ $(document).ready(function() {
         $('#reportFromDate').val(lastMonth.toISOString().split('T')[0]);
         $('#reportToDate').val(today.toISOString().split('T')[0]);
     }
+
     $('#searchReportBtn').off('click').on('click', function() {
         fetchTransactionReport();
     });
+
     $('#resetReportBtn').on('click', function() {
         setDefaultReportDates();
         $('#reportCustomerNo').val('');
@@ -216,12 +326,15 @@ $(document).ready(function() {
         $('#reportService').val('');
         $('#reportTableBody').html('<tr><td colspan="7" class="text-center">Click Search to load transactions</td></tr>');
     });
+
     function fetchTransactionReport() {
         const fromDate = $('#reportFromDate').val();
         const toDate = $('#reportToDate').val();
         const status = $('#reportStatus').val();
         const service = $('#reportService').val();
         const customerNo = $('#reportCustomerNo').val().trim();
+        const token = localStorage.getItem("auth_token");
+
         if (!fromDate || !toDate) {
             showToast('Please select both from and to dates', 'error');
             return;
@@ -230,6 +343,7 @@ $(document).ready(function() {
             showToast('Please enter a valid 10-digit mobile number', 'error');
             return;
         }
+
         const params = {
             from_date: fromDate,
             to_date: toDate
@@ -243,11 +357,13 @@ $(document).ready(function() {
         if (service && service.trim() !== '') {
             params.service = service.trim();
         }
+
         $.ajax({
             url: '{{ url("/api/dth") }}',
             method: 'GET',
             data: params,
             headers: {
+                'Authorization': 'Bearer ' + token,
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
@@ -275,7 +391,7 @@ $(document).ready(function() {
                                 <td>${transaction.created_at ? new Date(transaction.created_at).toLocaleString() : '-'}</td>
                                 <td>${transaction.service ? transaction.service.toUpperCase() : '-'}</td>
                                 <td>${transaction.mobile_no || '-'}</td>
-                                <td>₹${transaction.amount ? parseFloat(transaction.amount).toFixed(2) : '0.00'}</td>
+                                                                <td>₹${transaction.amount ? parseFloat(transaction.amount).toFixed(2) : '0.00'}</td>
                                 <td>${transaction.transaction_id || '-'}</td>
                                 <td><span class="badge ${getStatusClass(transaction.status)}">${transaction.status || 'Pending'}</span></td>
                             </tr>`;
@@ -299,6 +415,7 @@ $(document).ready(function() {
             }
         });
     }
+
     $('#searchForm').on('submit', function(e) {
         e.preventDefault();
         const mobileNo = $('#searchMobileNo').val().trim();
@@ -313,22 +430,28 @@ $(document).ready(function() {
         }
         searchRechargeRecords(mobileNo, transactionId);
     });
+
     $('#resetSearchBtn').on('click', function() {
         $('#searchForm')[0].reset();
         $('#searchResultsTableBody').html('<tr><td colspan="7" class="text-center">Enter search criteria and click Show</td></tr>');
     });
+
     function searchRechargeRecords(mobileNo, transactionId) {
         $('#searchBtn').prop('disabled', true);
         $('#searchBtnText').text('Searching...');
         $('#searchBtnSpinner').removeClass('d-none');
+        const token = localStorage.getItem("auth_token");
+
         const params = {};
         if (mobileNo) params.mobile_no = mobileNo;
         if (transactionId) params.transaction_id = transactionId;
+
         $.ajax({
             url: '{{ url("/api/dth") }}',
             method: 'GET',
             data: params,
             headers: {
+                'Authorization': 'Bearer ' + token,
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -375,6 +498,7 @@ $(document).ready(function() {
             }
         });
     }
+
     function displaySearchResults(data) {
         let rows = '';
         if (!data || data.length === 0) {
@@ -398,7 +522,9 @@ $(document).ready(function() {
             $(this).html(rows).fadeIn(300);
         });
     }
+
     function saveSearchHistory(mobileNo, transactionId, status) {
+        const token = localStorage.getItem("auth_token");
         const historyData = {
             customer_id: mobileNo || null,
             transaction_id: transactionId || null,
@@ -410,6 +536,7 @@ $(document).ready(function() {
             contentType: 'application/json',
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                'Authorization': 'Bearer ' + token,
                 'Accept': 'application/json'
             },
             data: JSON.stringify(historyData),
@@ -420,11 +547,14 @@ $(document).ready(function() {
             }
         });
     }
+
     function fetchSearchHistory() {
+        const token = localStorage.getItem("auth_token");
         $.ajax({
             url: '{{ url("/api/search-history") }}',
             method: 'GET',
             headers: {
+                'Authorization': 'Bearer ' + token,
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
@@ -440,6 +570,7 @@ $(document).ready(function() {
             }
         });
     }
+
     function displaySearchHistory(data) {
         let rows = '';
         if (!data || data.length === 0) {
@@ -459,15 +590,17 @@ $(document).ready(function() {
         }
         $('#searchHistoryTableBody').html(rows);
     }
+
     $('#v-pills-status-tab').on('shown.bs.tab', function() {
         fetchSearchHistory();
     });
+
     $('#refreshHistoryBtn').on('click', function() {
         fetchSearchHistory();
     });
 
-
     function fetchPendingTransactions(page = 1) {
+        const token = localStorage.getItem("auth_token");
         const params = {
             page: page,
             per_page: 10
@@ -487,6 +620,7 @@ $(document).ready(function() {
             method: 'GET',
             data: params,
             headers: {
+                'Authorization': 'Bearer ' + token,
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
@@ -554,6 +688,7 @@ $(document).ready(function() {
     $(document).on('click', '.retry-btn', function() {
         const transactionId = $(this).data('id');
         const btn = $(this);
+        const token = localStorage.getItem("auth_token");
         
         btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Retrying...');
         
@@ -562,6 +697,7 @@ $(document).ready(function() {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                'Authorization': 'Bearer ' + token,
                 'Accept': 'application/json'
             },
             success: function(response) {
@@ -582,6 +718,7 @@ $(document).ready(function() {
     // Retry all pending transactions
     $('#retryAllPendingBtn').on('click', function() {
         const btn = $(this);
+        const token = localStorage.getItem("auth_token");
         
         if (!confirm('Are you sure you want to retry all pending transactions?')) {
             return;
@@ -594,6 +731,7 @@ $(document).ready(function() {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                'Authorization': 'Bearer ' + token,
                 'Accept': 'application/json'
             },
             success: function(response) {
@@ -613,12 +751,12 @@ $(document).ready(function() {
     
     // Load pending transactions when tab is shown
     $('#v-pills-pending-tab').on('shown.bs.tab', function() {
-        fetchPendingTransactions();
+        fetchPendingTransactions
     });
-
 
     // Function to fetch failed transactions
     function fetchFailedTransactions(page = 1) {
+        const token = localStorage.getItem("auth_token");
         const params = {
             page: page,
             per_page: 10
@@ -638,6 +776,7 @@ $(document).ready(function() {
             method: 'GET',
             data: params,
             headers: {
+                'Authorization': 'Bearer ' + token,
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
@@ -705,6 +844,7 @@ $(document).ready(function() {
     $(document).on('click', '.retry-failed-btn', function() {
         const transactionId = $(this).data('id');
         const btn = $(this);
+        const token = localStorage.getItem("auth_token");
         
         btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Retrying...');
         
@@ -713,6 +853,7 @@ $(document).ready(function() {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                'Authorization': 'Bearer ' + token,
                 'Accept': 'application/json'
             },
             success: function(response) {
@@ -734,6 +875,7 @@ $(document).ready(function() {
     // Retry all failed transactions
     $('#retryAllFailedBtn').on('click', function() {
         const btn = $(this);
+        const token = localStorage.getItem("auth_token");
         
         if (!confirm('Are you sure you want to retry all failed transactions?')) {
             return;
@@ -746,6 +888,7 @@ $(document).ready(function() {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                'Authorization': 'Bearer ' + token,
                 'Accept': 'application/json'
             },
             success: function(response) {
@@ -769,6 +912,6 @@ $(document).ready(function() {
         fetchFailedTransactions();
     });
 
-
 });
 </script>
+

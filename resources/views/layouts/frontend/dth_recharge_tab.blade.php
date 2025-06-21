@@ -11,7 +11,7 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-4">
-                            <form id="rechargeForm">
+                            <form id="rechargeForm" style="padding: 0;">
                                 <div class="row service "> 
                                 <!-- <div class="row formobile"> --> 
                                     <div>

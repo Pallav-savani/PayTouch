@@ -10,11 +10,23 @@ class MobileRecharge extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'mobile_no',
         'operator',
         'circle',
         'amount',
         'txn_id',
-        'status',
+        'status'
     ];
+
+    protected $casts = [
+        'amount' => 'decimal:2',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

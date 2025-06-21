@@ -21,7 +21,7 @@
               <p><strong>Txn Ref ID:</strong> TXN1234567890</p>
               <p><strong>Operator Ref:</strong> OPR56789</p>
               <p><strong>Status:</strong> Success</p>
-              <img src="images/bbps.jpg" class="logo" />
+              <img src="images/bassured_logo.jpg" class="logo" />
               <p>Thank you for using BBPS!</p>
             </div>
         </div>

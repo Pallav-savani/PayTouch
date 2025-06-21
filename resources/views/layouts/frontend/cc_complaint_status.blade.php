@@ -10,9 +10,11 @@
                 <div class="img-box">
                     <img src="images/bbps.jpg" style="width: 150px;" class="right-logo" />
                 </div>
-              <h2>Check Complaint Status</h2>
-              <input type="text" placeholder="Complaint ID or Ref ID" />
-              <button>Check Status</button>
+                <h2>Check Complaint Status</h2>
+                 <div class="form-group">
+                    <input type="text" placeholder="Complaint ID or Ref ID" />
+                    <button>Check Status</button>
+                </div>
             </div>
         </div>
     </div>

@@ -43,6 +43,11 @@ class User extends Authenticatable
         return $this->hasOne(Wallet::class);
     }
 
+    public function mobileRecharges()
+    {
+        return $this->hasMany(MobileRecharge::class);
+    }
+
     protected static function boot()
     {
         parent::boot();

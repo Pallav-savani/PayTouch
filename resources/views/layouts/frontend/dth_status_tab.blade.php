@@ -12,7 +12,7 @@
                     <!-- Search Form -->
                     <div class="row mb-3 pb-3" style="border-bottom: 1px solid #acacac;">
                         <div class="col-md-12">
-                            <form id="searchForm">
+                            <form id="searchForm" style="max-width: 100%; align-items: center;">
                                 <div class="row">
                                     <div class="col-md-4">
                                         <label for="searchMobileNo" class="form-label">Mobile No.</label>
@@ -22,7 +22,7 @@
                                         <label for="searchTransactionId" class="form-label">Transaction ID</label>
                                         <input type="text" class="form-control" id="searchTransactionId" placeholder="Enter transaction ID">
                                     </div>
-                                    <div class="col-md-4 d-flex align-items-end">
+                                    <div class="col-md-4 d-flex align-items-center mt-3">
                                         <button type="submit" class="btn btn-primary text-white me-2" id="searchBtn">
                                             <span id="searchBtnText">Show</span>
                                             <span id="searchBtnSpinner" class="spinner-border spinner-border-sm d-none" role="status"></span>

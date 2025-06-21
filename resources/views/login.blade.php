@@ -22,7 +22,7 @@
             border-radius: 15px;
             box-shadow: 0 15px 35px rgba(0,0,0,0.1);
             overflow: hidden;
-            max-width: 900px;
+            max-width: 450px;
             margin: auto;
         }
         
@@ -161,6 +161,9 @@
             border-color: #0077b5;
             color: #0077b5;
         }
+        .btn-outline:hover{
+            text-decoration: underline;
+        }
         
         .divider {
             position: relative;
@@ -217,6 +220,13 @@
             .welcome-icon {
                 font-size: 3rem;
                 margin-bottom: 1rem;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .col-md-7 {
+                flex: 0 0 auto;
+                width: 100%;
             }
         }
         
@@ -282,43 +292,9 @@
         <div class="row justify-content-center">
             <div class="col-12">
                 <div class="login-container">
-                    <div class="row g-0">
+                    <!-- <div class="row g-0"> -->
                         <!-- Left Side - Welcome -->
-                        <div class="col-md-5 login-left slide-in-left">
-                            <div>
-                                <div class="welcome-icon">
-                                    <i class="fas fa-briefcase"></i>
-                                </div>
-                                <h2 class="mb-3">Welcome Back!</h2>
-                                <p class="lead mb-4">Sign in to access your account and continue your job search journey or manage your hiring process.</p>
-                                
-                                <ul class="feature-list">
-                                    <li>
-                                        <i class="fas fa-search"></i>
-                                        <span>Browse thousands of jobs</span>
-                                    </li>
-                                    <li>
-                                        <i class="fas fa-paper-plane"></i>
-                                        <span>Apply with one click</span>
-                                    </li>
-                                    <li>
-                                        <i class="fas fa-chart-line"></i>
-                                        <span>Track your applications</span>
-                                    </li>
-                                    <li>
-                                        <i class="fas fa-bell"></i>
-                                        <span>Get job alerts</span>
-                                    </li>
-                                </ul>
-                                
-                                <div class="mt-4">
-                                    <p class="mb-2">Don't have an account?</p>
-                                    <a href="{{ route('register') }}" class="btn btn-outline-light">
-                                        <i class="fas fa-user-plus me-1"></i>Create Account
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
+
                         
                         <!-- Right Side - Login Form -->
                         <div class="col-md-7 login-right slide-in-right">
@@ -369,6 +345,13 @@
                                     </button>
                                 </div>
                             </form>
+
+                            <div class="mt-4 d-flex align-items-center column-gap-2 w-100" style="justify-content: space-between; outline: none;">
+                                <p class="mb-2">Don't have an account?</p>
+                                <a href="{{ route('register') }}" class="btn btn-outline">
+                                    <i class="fas fa-user-plus me-1"></i>Create Account
+                                </a>
+                            </div>
                             
                             <!-- Social Login -->
                             <div class="social-login fade-in">
@@ -391,12 +374,12 @@
                             </div>
                             
                             <div class="text-center mt-4 fade-in">
-                                <a href="{{ route('home') }}" class="text-decoration-none">
+                                <a href="{{ route('index') }}" class="text-decoration-none">
                                     <i class="fas fa-home me-1"></i>Back to Home
                                 </a>
                             </div>
                         </div>
-                    </div>
+                    <!-- </div> -->
                 </div>
             </div>
         </div>

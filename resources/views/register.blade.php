@@ -22,7 +22,7 @@
             border-radius: 15px;
             box-shadow: 0 15px 35px rgba(0,0,0,0.1);
             overflow: hidden;
-            max-width: 1000px;
+            max-width: 550px;
             margin: auto;
         }
         
@@ -37,7 +37,7 @@
         }
         
         .register-right {
-            padding: 60px 40px;
+            padding: 50px 40px;
         }
         
         .form-control:focus {
@@ -108,6 +108,10 @@
         .role-user { background: #e3f2fd; color: #1976d2; }
         .role-employer { background: #e8f5e8; color: #388e3c; }
         .role-admin { background: #fff3e0; color: #f57c00; }
+
+        .btn-outline:hover{
+            text-decoration: underline;
+        }
         
         @media (max-width: 768px) {
             .register-left {
@@ -115,6 +119,13 @@
             }
             .register-right {
                 padding: 30px 20px;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .col-md-7 {
+                flex: 0 0 auto;
+                width: 100%;
             }
         }
     </style>
@@ -134,38 +145,8 @@
         <div class="row justify-content-center">
             <div class="col-12">
                 <div class="register-container">
-                    <div class="row g-0">
-                        <!-- Left Side - Welcome -->
-                        <div class="col-md-5 register-left">
-                            <div>
-                                <h2 class="mb-4">
-                                    <i class="fas fa-user-plus me-2"></i>Join Us Today!
-                                </h2>
-                                <p class="lead mb-4">Create your account and start your journey to find the perfect job or hire amazing talent.</p>
-                                
-                                <div class="mb-4">
-                                    <h5 class="mb-3">Quick Registration:</h5>
-                                    <div class="text-start">
-                                        <div class="mb-2">
-                                            <i class="fas fa-mobile-alt me-2"></i>Mobile Number
-                                        </div>
-                                        <div class="mb-2">
-                                            <i class="fas fa-envelope me-2"></i>Email Address
-                                        </div>
-                                        <div class="mb-2">
-                                            <i class="fas fa-lock me-2"></i>Secure Password
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="mt-4">
-                                    <p class="mb-2">Already have an account?</p>
-                                    <a href="{{ route('login') }}" class="btn btn-outline-light btn-sm">
-                                        <i class="fas fa-sign-in-alt me-1"></i>Sign In
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
+                    <!-- <div class="row g-0"> -->
+                        
                         
                         <!-- Right Side - Registration Form -->
                         <div class="col-md-7 register-right">
@@ -228,14 +209,16 @@
                                     </button>
                                 </div>
                             </form>
-                            
-                            <div class="text-center mt-4">
-                                <a href="{{ route('home') }}" class="text-decoration-none">
-                                    <i class="fas fa-home me-1"></i>Back to Home
+
+                            <div class="mt-3 d-flex align-items-center w-100 mb-3" style="column-gap: 10px; outline: none;">
+                                <p class="reg-text m-0">Don't have an account?</p>
+                                <a href="{{ route('login') }}" class="btn btn-outline p-0">
+                                    <i class="fas fa-user me-1"></i>Sign In
                                 </a>
                             </div>
+                        
                         </div>
-                    </div>
+                    <!-- </div> -->
                 </div>
             </div>
         </div>
@@ -295,7 +278,7 @@
                 showLoading();
                 
                 $.ajax({
-                    url: '/api/register',
+                    url: '{{ url("/api/register") }}',
                     method: 'POST',
                     data: formData,
                     success: function(response) {
@@ -309,13 +292,13 @@
                             showAlert('Registration successful! Welcome aboard! Redirecting...', 'success');
                             
                             setTimeout(function() {
-                                window.location.href = '/welcome';
-                            }, 2000);
+                                window.location.href = '/login';
+                            }, 200);
                         } else {
                             showAlert('Registration completed, but login failed. Please try signing in.', 'warning');
                             setTimeout(function() {
                                 window.location.href = '/login';
-                            }, 2000);
+                            }, 200);
                         }
                     },
                     error: function(xhr, status, error) {

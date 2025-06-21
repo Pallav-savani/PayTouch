@@ -12,7 +12,7 @@
                     <!-- Filter Form -->
                     <div class="row mb-3 pb-3" style="border-bottom: 1px solid #acacac;">
                         <div class="col-md-12">
-                            <form id="failedFilterForm">
+                            <form id="failedFilterForm" style="max-width: 100%; align-items: center;">
                                 <div class="row">
                                     <div class="col-md-3">
                                         <label for="failedMobileNo" class="form-label">Mobile No.</label>
@@ -26,7 +26,7 @@
                                         <label for="failedToDate" class="form-label">To Date</label>
                                         <input type="date" class="form-control" id="failedToDate">
                                     </div>
-                                    <div class="col-md-3 d-flex align-items-end">
+                                    <div class="col-md-3 d-flex align-items-center mt-4">
                                         <button type="submit" class="btn btn-primary text-white me-2" id="failedFilterBtn">
                                             <span id="failedFilterBtnText">Filter</span>
                                             <span id="failedFilterBtnSpinner" class="spinner-border spinner-border-sm d-none" role="status"></span>

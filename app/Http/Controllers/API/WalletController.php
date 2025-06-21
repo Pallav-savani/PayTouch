@@ -314,10 +314,10 @@ class WalletController extends Controller
             $result = $this->mobikwikService->handleWalletTopupCallback($responseData);
 
             if ($result['success']) {
-                return redirect()->route('wallet.index')->with('success', 'Money added successfully!');
+                return redirect()->route('wallet')->with('success', 'Money added successfully!');
             }
 
-            return redirect()->route('wallet.index')->with('error', $result['message'] ?? 'Payment failed!');
+            return redirect()->route('wallet')->with('error', $result['message'] ?? 'Payment failed!');
             
         } catch (\Exception $e) {
             Log::error('Wallet callback error: ' . $e->getMessage(), [
@@ -325,7 +325,7 @@ class WalletController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
 
-            return redirect()->route('wallet.index')->with('error', 'Payment processing failed!');
+            return redirect()->route('wallet')->with('error', 'Payment processing failed!');
         }
     }
 
@@ -361,7 +361,7 @@ class WalletController extends Controller
             'request_data' => $request->all()
         ]);
         
-        return redirect()->route('wallet.index')->with('error', 'Payment was cancelled!');
+        return redirect()->route('wallet')->with('error', 'Payment was cancelled!');
     }
 }
 

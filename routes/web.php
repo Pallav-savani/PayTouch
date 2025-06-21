@@ -34,8 +34,8 @@ Route::get('/loadWallet', function () {
 
 // Wallet view route (only the view, no API logic)
 Route::get('/wallet', function () {
-    return view('wallet.index');
-})->name('wallet.index');
+    return view('layouts.frontend.wallet');
+})->name('wallet');
 
 Route::get('/ccbill', function () {
     return view('layouts.frontend.ccbill');

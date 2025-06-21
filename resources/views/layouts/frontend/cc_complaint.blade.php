@@ -10,16 +10,22 @@
                 <div class="img-box">
                     <img src="images/bbps.jpg" style="width: 150px;" class="right-logo" />
                 </div>
+                    <h2>Complaint Registration</h2>
+                    <div class="form-group">
+                        <label>Mobile No:</label>
+                        <input type="text" id="mNumber" name="mn" placeholder="Mobile Number" required />
 
-                <h2>Complaint Registration</h2>
-                <h4>Option 1: Mobile & Date</h4>
-                <input type="text" placeholder="Mobile Number" />
-                <input type="date" />
-                <button class="rc1">Register Complaint</button>
-                
-                <h4>Option 2: Transaction Reference</h4>
-                <input type="text" placeholder="Transaction Ref ID" />
-                <button>Register Complaint</button>
+                        <label>Date:</label>
+                        <input type="date" id="date" name="date" required />
+
+                        <button class="rc1">Register Complaint</button>
+                    </div>
+                        
+                    <div class="form-group"> 
+                        <h4>Option 2: Transaction Reference</h4>
+                        <input type="text" placeholder="Transaction Ref ID" />
+                        <button>Register Complaint</button>
+                    </div> 
             </div>
         </div>
     </div>

@@ -35,7 +35,7 @@ class UserController extends Controller
             'mobile' => $request->mobile,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'email_verified_at' => now(),
+            'email_verified_at' => $request->email_verified_at->datetime.now(),
         ]);
 
         return response()->json([

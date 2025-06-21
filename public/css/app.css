@@ -102,14 +102,40 @@ th {
 }
 
 .details {
-  background-color: rgba(216, 139, 139, 0.14);
-  padding: 8px;
-  font-size: 16px;
-  margin: 4px;
-  border: solid 1px #13a3e7;
-  border-radius: 6px;
-  color: black;
+    background-color: rgba(216, 139, 139, 0.14);
+    padding: 8px 16px;
+    font-size: 16px;
+    border: 1px solid #13a3e7;
+    border-radius: 6px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    /* gap: 6px; */
+    background: linear-gradient(90deg,
+      #a960ee 1%,
+      /* #90e0ff 0%, */
+      #ff333d 100%,
+      #ffcb57 100%);
+    }
+
+.os-box {
+    background-color: rgba(216, 139, 139, 0.14);
+    display: inline-block;
+    padding: 6px 20px;
+    border: 1px solid #13a3e7;
+    border-radius: 8px;
+    font-size: 18px;
+    margin-top: 500px;
+    margin-right:600px; 
+    color: #fff;
+    background: linear-gradient(90deg,
+      #a960ee 8%,
+      /* #90e0ff 0%, */
+      #ff333d 100%,
+      #ffcb57 100%);
 }
+
+ 
 
 .navigate {
   background-color: rgb(102, 179, 231);
@@ -253,7 +279,7 @@ label {
   border-bottom-right-radius: 14px;
   padding-bottom: 15px;
   border: solid 1px #13a3e7;
-  border-bottom-left-radius: 5px;
+  border-bottom-left-radius: 14px;
 }
 
 .validation-errors {
@@ -335,6 +361,11 @@ option {
     text-align: center;
   }
 
+img{
+  width: 2000px;
+  padding: 200px;
+}
+  
   #userInfo table {
     margin: 0 auto;
   }

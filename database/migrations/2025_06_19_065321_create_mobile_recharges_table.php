@@ -13,6 +13,7 @@ return new class extends Migration
     {
        Schema::create('mobile_recharges', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('user_id');
             $table->string('mobile_no', 15);
             $table->string('operator');
             $table->string('circle');
@@ -20,6 +21,10 @@ return new class extends Migration
             $table->string('txn_id')->unique();
             $table->enum('status', ['Success', 'Pending', 'Failed'])->default('Pending');
             $table->timestamps();
+            
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->index(['user_id', 'status']);
+            $table->index(['user_id', 'created_at']);
         });
     }
 

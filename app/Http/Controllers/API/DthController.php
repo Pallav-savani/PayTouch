@@ -11,16 +11,26 @@ use Illuminate\Support\Str;
 use App\Models\User;
 use App\Models\Wallet;
 use App\Services\MobiKwikService;
+use Illuminate\Support\Facades\Auth;
 
 class DthController extends Controller
 {
     /**
-     * Display a listing of DTH recharges
+     * Display a listing of DTH recharges for authenticated user
      */
     public function index(Request $request): JsonResponse
     {
         try {
-            $query = Dth::orderBy('created_at', 'desc');
+            $user = Auth::user();
+            
+            if (!$user) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
+
+            $query = Dth::where('user_id', $user->id)->orderBy('created_at', 'desc');
             
             // Date range filtering
             if ($request->has('from_date') && $request->has('to_date')) {
@@ -48,7 +58,7 @@ class DthController extends Controller
                 $query->where('transaction_id', $request->transaction_id);
             }
 
-            $perPage = $request->get('per_page', 50); // Increased default for reports
+            $perPage = $request->get('per_page', 50);
             $recharges = $query->paginate($perPage);
             
             return response()->json([
@@ -58,7 +68,6 @@ class DthController extends Controller
             ], 200);
             
         } catch (\Exception $e) {
-            // \Log::error('DTH Index Error:', ['error' => $e->getMessage()]);
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to fetch DTH recharges',
@@ -73,6 +82,15 @@ class DthController extends Controller
     public function store(Request $request): JsonResponse
     {
         try {
+            $user = Auth::user();
+            
+            if (!$user) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
+
             // Validation rules
             $validator = Validator::make($request->all(), [
                 'service' => 'required|string|in:airtel,bigtv,dishtv,tatasky,videocon,suntv',
@@ -97,28 +115,56 @@ class DthController extends Controller
                 ], 422);
             }
 
+            // Check wallet balance
+            $rechargeAmount = floatval($request->amount);
+            $userBalance = floatval($user->wallet_balance ?? 0);
+
+            if ($userBalance < $rechargeAmount) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Insufficient wallet balance. Please add money to your wallet.',
+                    'data' => [
+                        'required_amount' => $rechargeAmount,
+                        'current_balance' => $userBalance,
+                        'shortfall' => $rechargeAmount - $userBalance
+                    ]
+                ], 422);
+            }
+
             // Generate unique transaction ID
             $transactionId = 'PYTCH' . date('Ymd') . $this->generateRandomString(4) . rand(1000, 9999);
 
+            // Deduct balance first
+            if (!$this->deductUserBalance($user, $rechargeAmount)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Failed to deduct balance from wallet'
+                ], 500);
+            }
+
             // Create DTH recharge record
             $dthRecharge = Dth::create([
+                'user_id' => $user->id,
                 'service' => $request->service,
                 'mobile_no' => $request->mobile_no,
-                'amount' => $request->amount,
+                'amount' => $rechargeAmount,
                 'transaction_id' => $transactionId,
                 'status' => 'pending'
             ]);
 
+            // Process recharge
             $this->processRecharge($dthRecharge);
-
             $dthRecharge = $dthRecharge->fresh();
 
+            // If recharge failed, refund the amount
             if ($dthRecharge->status === 'failed') {
+                $this->refundUserBalance($user, $rechargeAmount);
+                
                 return response()->json([
                     'status' => 'failed',
-                    'message' => 'Recharge failed. Please try again.',
+                    'message' => 'Recharge failed. Amount has been refunded to your wallet.',
                     'data' => $dthRecharge
-                ], 200); // Use 200 status code so frontend can handle the response properly
+                ], 200);
             } else {
                 return response()->json([
                     'status' => 'success',
@@ -128,6 +174,11 @@ class DthController extends Controller
             }
 
         } catch (\Exception $e) {
+            // Refund amount if something goes wrong
+            if (isset($user) && isset($rechargeAmount)) {
+                $this->refundUserBalance($user, $rechargeAmount);
+            }
+            
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to process DTH recharge',
@@ -143,6 +194,12 @@ class DthController extends Controller
             return $user->save();
         }
         return false;
+    }
+
+    private function refundUserBalance(User $user, float $amount): bool
+    {
+        $user->wallet_balance = ($user->wallet_balance ?? 0) + $amount;
+        return $user->save();
     }
 
     private function generateRandomString($length = 4): string
@@ -163,13 +220,22 @@ class DthController extends Controller
     public function show($id): JsonResponse
     {
         try {
-            $dthRecharge = Dth::findOrFail($id);
+            $user = Auth::user();
+            
+            if (!$user) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
+
+            $dthRecharge = Dth::where('user_id', $user->id)->findOrFail($id);
             
             return response()->json([
                 'status' => 'success',
                 'message' => 'DTH recharge retrieved successfully',
                 'data' => $dthRecharge
-            ], 200);
+                            ], 200);
             
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
@@ -191,7 +257,16 @@ class DthController extends Controller
     public function update(Request $request, $id): JsonResponse
     {
         try {
-            $dthRecharge = Dth::findOrFail($id);
+            $user = Auth::user();
+            
+            if (!$user) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
+
+            $dthRecharge = Dth::where('user_id', $user->id)->findOrFail($id);
             
             // Validation rules for update
             $validator = Validator::make($request->all(), [
@@ -240,7 +315,16 @@ class DthController extends Controller
     public function destroy($id): JsonResponse
     {
         try {
-            $dthRecharge = Dth::findOrFail($id);
+            $user = Auth::user();
+            
+            if (!$user) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
+
+            $dthRecharge = Dth::where('user_id', $user->id)->findOrFail($id);
             $dthRecharge->delete();
             
             return response()->json([
@@ -263,19 +347,28 @@ class DthController extends Controller
     }
 
     /**
-     * Get recharge statistics
+     * Get recharge statistics for authenticated user
      */
     public function statistics(): JsonResponse
     {
         try {
+            $user = Auth::user();
+            
+            if (!$user) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
+
             $stats = [
-                'total_recharges' => Dth::count(),
-                'pending_recharges' => Dth::where('status', 'pending')->count(),
-                'completed_recharges' => Dth::where('status', 'completed')->count(),
-                'failed_recharges' => Dth::where('status', 'failed')->count(),
-                'total_amount' => Dth::where('status', 'completed')->sum('amount'),
-                'today_recharges' => Dth::whereDate('created_at', today())->count(),
-                'today_amount' => Dth::whereDate('created_at', today())
+                'total_recharges' => Dth::where('user_id', $user->id)->count(),
+                'pending_recharges' => Dth::where('user_id', $user->id)->where('status', 'pending')->count(),
+                'completed_recharges' => Dth::where('user_id', $user->id)->where('status', 'completed')->count(),
+                'failed_recharges' => Dth::where('user_id', $user->id)->where('status', 'failed')->count(),
+                'total_amount' => Dth::where('user_id', $user->id)->where('status', 'completed')->sum('amount'),
+                'today_recharges' => Dth::where('user_id', $user->id)->whereDate('created_at', today())->count(),
+                'today_amount' => Dth::where('user_id', $user->id)->whereDate('created_at', today())
                                     ->where('status', 'completed')
                                     ->sum('amount')
             ];
@@ -321,7 +414,16 @@ class DthController extends Controller
     public function getPendingTransactions(Request $request): JsonResponse
     {
         try {
-            $query = Dth::where('status', 'pending')->orderBy('created_at', 'desc');
+            $user = Auth::user();
+            
+            if (!$user) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
+
+            $query = Dth::where('user_id', $user->id)->where('status', 'pending')->orderBy('created_at', 'desc');
             
             // Date range filtering
             if ($request->has('from_date') && $request->has('to_date')) {
@@ -358,7 +460,16 @@ class DthController extends Controller
     public function retryTransaction($id): JsonResponse
     {
         try {
-            $dthRecharge = Dth::findOrFail($id);
+            $user = Auth::user();
+            
+            if (!$user) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
+
+            $dthRecharge = Dth::where('user_id', $user->id)->findOrFail($id);
             
             if ($dthRecharge->status !== 'pending') {
                 return response()->json([
@@ -394,7 +505,16 @@ class DthController extends Controller
     public function retryAllPending(): JsonResponse
     {
         try {
-            $pendingTransactions = Dth::where('status', 'pending')->get();
+            $user = Auth::user();
+            
+            if (!$user) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
+
+            $pendingTransactions = Dth::where('user_id', $user->id)->where('status', 'pending')->get();
             
             if ($pendingTransactions->isEmpty()) {
                 return response()->json([
@@ -439,7 +559,16 @@ class DthController extends Controller
     public function getFailedTransactions(Request $request): JsonResponse
     {
         try {
-            $query = Dth::where('status', 'failed')->orderBy('created_at', 'desc');
+            $user = Auth::user();
+            
+            if (!$user) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
+
+            $query = Dth::where('user_id', $user->id)->where('status', 'failed')->orderBy('created_at', 'desc');
             
             // Date range filtering
             if ($request->has('from_date') && $request->has('to_date')) {
@@ -476,7 +605,16 @@ class DthController extends Controller
     public function retryFailedTransaction($id): JsonResponse
     {
         try {
-            $dthRecharge = Dth::findOrFail($id);
+            $user = Auth::user();
+            
+            if (!$user) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
+
+            $dthRecharge = Dth::where('user_id', $user->id)->findOrFail($id);
             
             if ($dthRecharge->status !== 'failed') {
                 return response()->json([
@@ -515,7 +653,16 @@ class DthController extends Controller
     public function retryAllFailed(): JsonResponse
     {
         try {
-            $failedTransactions = Dth::where('status', 'failed')->get();
+            $user = Auth::user();
+            
+            if (!$user) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
+
+            $failedTransactions = Dth::where('user_id', $user->id)->where('status', 'failed')->get();
             
             if ($failedTransactions->isEmpty()) {
                 return response()->json([
@@ -558,3 +705,4 @@ class DthController extends Controller
         }
     }
 }
+

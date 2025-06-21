@@ -44,6 +44,29 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/balance', [APIWalletController::class, 'getBalance']);
         Route::get('/wallet/details', [APIWalletController::class, 'getWalletDetails']);
     });
+
+    // DTH Recharge Routes
+    Route::prefix('dth')->group(function () {
+        Route::get('/', [DthController::class, 'index']);
+        Route::post('/', [DthController::class, 'store']);
+        Route::get('/{id}', [DthController::class, 'show']);
+        Route::put('/{id}', [DthController::class, 'update']);
+        Route::patch('/{id}', [DthController::class, 'update']);
+        Route::delete('/{id}', [DthController::class, 'destroy']);
+        Route::get('/pending', [DthController::class, 'getPendingTransactions']);
+        Route::post('/{id}/retry', [DthController::class, 'retryTransaction']);
+        Route::post('/retry-all', [DthController::class, 'retryAllPending']);
+        Route::get('/failed', [DthController::class, 'getFailedTransactions']);
+        Route::post('/{id}/retry-failed', [DthController::class, 'retryFailedTransaction']);
+        Route::post('/retry-all-failed', [DthController::class, 'retryAllFailed']);
+        Route::get('/stats/dashboard', [DthController::class, 'statistics']);
+    });
+
+    Route::post('/recharge/submit', [MobileRechargeController::class, 'submit']);
+    Route::get('/recharge/history', [MobileRechargeController::class, 'history']);
+    Route::get('/recharge/search', [MobileRechargeController::class, 'search']);
+    Route::get('/recharge/statistics', [MobileRechargeController::class, 'statistics']);
+
 });
 
 // Callback routes (no auth needed)
@@ -76,25 +99,6 @@ Route::prefix('cc-bill-payments')->group(function () {
     });
 });
 
-Route::post('/recharge/submit', [MobileRechargeController::class, 'submit'])->name('recharge.submit');
-Route::get('/recharge/history', [MobileRechargeController::class, 'history'])->name('recharge.history');
-
-// DTH Recharge Routes
-Route::prefix('dth')->group(function () {
-    Route::get('/', [DthController::class, 'index']);
-    Route::post('/', [DthController::class, 'store']);
-    Route::get('/{id}', [DthController::class, 'show']);
-    Route::put('/{id}', [DthController::class, 'update']);
-    Route::patch('/{id}', [DthController::class, 'update']);
-    Route::delete('/{id}', [DthController::class, 'destroy']);
-    Route::get('/pending', [DthController::class, 'getPendingTransactions']);
-    Route::post('/{id}/retry', [DthController::class, 'retryTransaction']);
-    Route::post('/retry-all', [DthController::class, 'retryAllPending']);
-    Route::get('/failed', [DthController::class, 'getFailedTransactions']);
-    Route::post('/{id}/retry-failed', [DthController::class, 'retryFailedTransaction']);
-    Route::post('/retry-all-failed', [DthController::class, 'retryAllFailed']);
-    Route::get('/stats/dashboard', [DthController::class, 'statistics']);
-});
 
 // Search History Routes
 Route::prefix('search-history')->group(function () {
