@@ -1,5 +1,5 @@
       form {
-        max-width: 600px;
+        /* max-width: 600px; */
         margin: 0 auto;
         padding: 0 20px;
       }
@@ -179,3 +179,8 @@
                     border: none;
                     
           }
+.mb-4{
+  margin-left: 10px;
+
+}
+          

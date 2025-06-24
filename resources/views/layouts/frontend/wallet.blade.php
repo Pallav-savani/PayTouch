@@ -123,7 +123,7 @@ $(document).ready(function() {
         submitBtn.prop('disabled', true).text('Processing...');
         
         $.ajax({
-            url: '/api/wallet/add-money',
+            url: '{{ url("/api/wallet/add-money") }}',
             method: 'POST',
             data: JSON.stringify({ amount: parseFloat(amount) }),
             success: function(response) {
@@ -174,7 +174,7 @@ $(document).ready(function() {
         submitBtn.prop('disabled', true).text('Processing...');
         
         $.ajax({
-            url: '/api/wallet/process-payment',
+            url: '{{ url("/api/wallet/process-payment") }}',
             method: 'POST',
             data: JSON.stringify(formData),
             success: function(response) {
@@ -221,7 +221,7 @@ $(document).ready(function() {
     // Load User Data Function
     function loadUserData() {
         $.ajax({
-            url: '/api/wallet/user-data',
+            url: '{{ url("/api/wallet/user-data") }}',
             method: 'GET',
             success: function(response) {
                 if (response.success) {
@@ -244,7 +244,7 @@ $(document).ready(function() {
     // Load Transactions Function
     function loadTransactions(page = 1) {
         $.ajax({
-            url: '/api/wallet/transactions?page=' + page,
+            url: '{{ url("/api/wallet/transactions?page=") }}' + page,
             method: 'GET',
             success: function(response) {
                 if (response.success) {

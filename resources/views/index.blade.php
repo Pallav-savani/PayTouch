@@ -351,7 +351,7 @@ if (is_array($countries)) {
         <div class="my-4 row align-items-center">
           <div class="col-lg-6 wow slideInLeft">
             <div class="p-img-sec">
-              <img class="img-fluid fadeInLeft" src="images/20240420_120409.png" width="550px" height="400px" alt="">
+              <img class="img-fluid fadeInLeft" src="images/icon2.png" width="550px" height="400px" alt="">
             </div>
           </div>
           <div class="col-lg-6 p-4 wow card-cont slideInRight">
@@ -618,8 +618,8 @@ if (is_array($countries)) {
           <div class="">
             <h3 class="head-title text-red">USEFUL LINKS</h3>
             </br>
-            <li class="card-text mb-2"><a class="nav-link <?= getActiveClass('') ?> px-3" href="?section=#"><i class="fa fa-home me-2"></i>Home</a></li>
-            <li class="card-text mb-2"><a class="nav-link <?= getActiveClass('services') ?> px-3" href="?section=services#services"><i class="fa fa-cog me-2"></i>About Us</a></li>
+            <li class="card-text mb-2"><a class="link <?= getActiveClass('') ?> px-3" href="?section=#"><i class="fa fa-home me-2"></i>Home</a></li>
+            <li class="card-text mb-2"><a class="link <?= getActiveClass('services') ?> px-3" href="?section=services#services"><i class="fa fa-cog me-2"></i>About Us</a></li>
             <li class="card-text mb-2"><a href="https://www.paytouch.in/data-retention-policies.html">Data Retention policy</a></li>
             <li class="card-text mb-2"><a href="https://www.paytouch.in/privacy-policy.html">Privacy policy</a></li>
             <li class="card-text mb-2"><a href="https://www.paytouch.in/termsandcondition.html">Terms & Conditions</a> </li>

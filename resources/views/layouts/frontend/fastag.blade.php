@@ -102,7 +102,7 @@
     </style>
 </head>
 <body> 
-<div class="service-card card mt-3">
+<div class=" ">
         <div class="d-flex align-items-start user-service-tab">
             <div class="nav flex-column nav-pills me-3" id="v-pills-tab" role="tablist" aria-orientation="vertical">
                 <button class="nav-link active left-space" id="v-pills-recharge-tab"

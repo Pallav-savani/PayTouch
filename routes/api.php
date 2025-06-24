@@ -2,20 +2,19 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Api\UserController;
-use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\DthController;
+use App\Http\Controllers\API\UserController;
+use App\Http\Controllers\API\AuthController;
+use App\Http\Controllers\API\DthController;
 use App\Http\Controllers\API\RechargeSuccessController;
 use App\Http\Controllers\API\RechargePendingController;
 use App\Http\Controllers\API\RechargeFailController;
-use App\Http\Controllers\Api\SearchHistoryController;
+use App\Http\Controllers\API\SearchHistoryController;
 use App\Http\Controllers\API\RechargeApiSuccessController;
 use App\Http\Controllers\API\RechargeApiPendingController;
 use App\Http\Controllers\API\RechargeApiFailController;
 use App\Http\Controllers\API\WalletController as APIWalletController;
 use App\Http\Controllers\API\CcBillPaymentController;
 use App\Http\Controllers\API\MobileRechargeController;
-use App\Http\Controllers\Api\WalletApiController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);

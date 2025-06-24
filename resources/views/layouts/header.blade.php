@@ -83,9 +83,9 @@
                             <div class="col-auto mt-3"><a href="{{ route('mobile')  }}" class="btn btn gradient-bg text-white">Mobile Recharge</a></div>
                             <div class="col-auto mt-3"><a href="{{ route('fastag') }}" class="btn btn gradient-bg text-white">Fastag Recharges</a></div> 
                              <div class="col-auto mt-3"><a href="{{ route('ccbill') }}" class="btn btn gradient-bg text-white">CC Bill Pay</a></div>
-                            <div class="col-auto mt-3"><a href="#" class="btn btn gradient-bg text-white">Utility Bills</a></div>
+                            <div class="col-auto mt-3"><a href="{{ route ('utilitybills') }}" class="btn btn gradient-bg text-white">Utility Bills</a></div>
                             <div class="col-auto mt-3"><a href="#" class="btn btn gradient-bg text-white">Reports</a></div>
-                            <div class="col-auto mt-3"><a href="#" class="btn btn gradient-bg text-white">My Account</a></div> 
+                            <div class="col-auto mt-3"><a href="{{ route('myaccount') }}" class="btn btn gradient-bg text-white">My Account</a></div> 
                             <div class="col-auto mt-3"><a href="{{ route('wallet') }}" class="btn btn gradient-bg text-white">Load Wallet</a></div>
                             <div class="col-auto mt-3"><a href="#" class="btn btn gradient-bg text-white">Flight Booking</a></div>
                             <div class="col-auto mt-3"><a href="#" class="btn btn gradient-bg text-white">Railway Booking</a></div>
@@ -135,6 +135,64 @@
     let isPageVisible = true;
 
     $(document).ready(function () {
+        checkAuthentication();
+
+    });
+
+    function checkAuthentication() {
+        const token = localStorage.getItem("auth_token");
+
+        if (!token) {
+            // No token found, redirect to login
+            redirectToLogin();
+            return;
+        }
+
+        // Verify token with server
+        $.ajax({
+            url: "{{ url('/api/user') }}",
+            type: "GET",
+            dataType: "json",
+            headers: {
+                "Authorization": "Bearer " + token,
+                "Content-Type": "application/json"
+            },
+            success: function (user) {
+                // Token is valid, proceed with normal flow
+                initializeApp();
+                updateUserInfo(user);
+            },
+            error: function (xhr) {
+                console.error("Authentication failed:", xhr);
+                if (xhr.status === 401 || xhr.status === 403) {
+                    // Token is invalid or expired
+                    localStorage.removeItem("auth_token");
+                    localStorage.removeItem("user_data");
+                    redirectToLogin();
+                } else {
+                    // Network error or server error, show error message
+                    $("#userInfo").html("<p class='text-danger'>Failed to verify authentication. Please refresh the page.</p>");
+                }
+            }
+        });
+    }
+
+    function redirectToLogin() {
+        // Show a brief message before redirecting
+        $("#userInfo").html("<p class='text-warning'>Redirecting to login...</p>");
+        
+        // Clear any existing intervals
+        if (walletRefreshInterval) {
+            clearInterval(walletRefreshInterval);
+        }
+        
+        // Redirect after a short delay
+        setTimeout(function() {
+            window.location.href = "{{ route('login') }}";
+        }, 1000);
+    }
+
+    function initializeApp() {
         // Initial load
         fetchUserInfo();
         
@@ -143,7 +201,7 @@
         
         // Handle page visibility changes
         handlePageVisibility();
-    });
+    }
 
     function fetchUserInfo() {
         const token = localStorage.getItem("auth_token");
@@ -169,7 +227,7 @@
                 if (xhr.status === 401) {
                     $("#userInfo").html("<p class='text-danger'>Session expired. Please login again.</p>");
                     // Optionally redirect to login
-                    // window.location.href = '/login';
+                    window.location.href = '/login';
                 } else {
                     $("#userInfo").html("<p class='text-danger'>Failed to fetch user info.</p>");
                 }
@@ -311,7 +369,7 @@
         stopWalletAutoRefresh();
 
         $.ajax({
-            url: 'http://127.0.0.1:8000/api/logout',
+            url: '{{ url("/api/logout") }}',
             type: 'POST',
             headers: {
                 'Authorization': 'Bearer ' + token

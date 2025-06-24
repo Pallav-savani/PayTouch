@@ -477,7 +477,7 @@ img{
   .overflow-x-scroll table tr {
     display: flex;
     flex-direction: column;
-  }
+   }
 }
 
 .frm-cn {
@@ -578,9 +578,130 @@ img{
   .user-service-tab {
     flex-direction: column;
   }
+  
 
   .user-service-tab .nav {
     flex-direction: row !important;
   }
 }
+ 
+/* --- Responsive Fixes for 992px and Below --- */
+@media only screen and (max-width: 992px) {
+  /* Fix image sizing bug */
+  img {
+    width: 100% !important;
+    height: auto !important;
+    padding: 0 !important;
+    max-width: 100%;
+    display: block;
+  }
+
+  /* Navigation: stack vertically and full width */
+  nav {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0.5rem 1rem;
+  }
+  #navbarNav > ul {
+    flex-direction: column;
+    width: 100%;
+    padding-left: 0;
+  }
+  #navbarNav > ul > li {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+  #navbarNav > ul > li > a {
+    color: #000 !important;
+    font-size: 15px;
+    padding: 0.75rem 0.5rem;
+    display: block;
+    width: 100%;
+  }
+
+  /* Card and grid layouts: stack vertically */
+  .row,
+  .f-clolumn,
+  .f-m-column {
+    flex-direction: column !important;
+    width: 100% !important;
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+  }
+  .card-shine {
+    width: 100% !important;
+    margin-bottom: 1rem;
+  }
+
+  /* Table responsiveness: horizontal scroll */
+  .overflow-x-scroll,
+  #divLastTrn,
+  #userInfo table {
+    overflow-x: auto !important;
+    display: block;
+    width: 100%;
+  }
+  #userInfo table tr,
+  .overflow-x-scroll table tr {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+  #userInfo table td,
+  #userInfo table th {
+    width: 100%;
+    display: block;
+  }
+
+  /* Font size scaling for mobile */
+  body,
+  ul > li > a,
+  h1, h2, h3, h4, h5, h6,
+  .textformobile,
+  .operator,
+  .service-title h2 {
+    font-size: 1rem !important;
+  }
+  .formobile {
+    font-size: 1rem !important;
+    padding: 8px 5px;
+  }
+
+  /* Padding and margin adjustments */
+  .martop,
+  .martop10,
+  .martbot10,
+  .padrile,
+  .service,
+  .main-service-section,
+  .form-content {
+    margin: 0.5rem 0 !important;
+    padding: 0.5rem !important;
+  }
+  .blank-box,
+  .details,
+  .os-box {
+    font-size: 1rem !important;
+    padding: 0.5rem !important;
+    margin: 0.5rem 0 !important;
+  }
+
+  /* Forms and buttons full width */
+  form,
+  .form-control,
+  .form-select,
+  input.btn,
+  button.btn {
+    width: 100% !important;
+    box-sizing: border-box;
+    margin-bottom: 1rem;
+  }
+
+  /* Container width */
+  .frm-cn {
+    max-width: 98% !important;
+    padding: 0 1%;
+  }
+}
+/* --- End Responsive Fixes for 992px and Below --- */
 

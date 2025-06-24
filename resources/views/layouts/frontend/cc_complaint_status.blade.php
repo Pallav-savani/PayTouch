@@ -15,6 +15,7 @@
                     <input type="text" placeholder="Complaint ID or Ref ID" />
                     <button>Check Status</button>
                 </div>
+                
             </div>
         </div>
     </div>
