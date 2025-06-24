@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use \Illuminate\Support\Facades\Log;
 
 class MobileRechargeController extends Controller
 {
@@ -92,6 +93,12 @@ class MobileRechargeController extends Controller
             // Process recharge
             $this->processRecharge($recharge);
             $recharge = $recharge->fresh();
+
+            Log::info('Mobile Recharge API', [
+                'status' => $request->all(),
+                'message' => 'Mobile Recharge API',
+                'data' => $recharge
+            ]);
 
             // If recharge failed, refund the amount
             if ($recharge->status === 'Failed') {
@@ -197,6 +204,12 @@ class MobileRechargeController extends Controller
 
             $perPage = $request->get('per_page', 50);
             $recharges = $query->orderBy('created_at', 'desc')->paginate($perPage);
+
+            log::info('Search Mobile Recharge API Call', [
+                'status' => $request->all(),
+                'message' => 'Search Mobile Recharge API Call',
+                'data' => $recharges
+            ]);
 
             return response()->json([
                 'success' => true,

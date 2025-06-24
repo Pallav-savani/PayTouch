@@ -41,6 +41,12 @@ class WalletController extends Controller
                                   ->orderBy('created_at', 'desc')
                                   ->paginate(10);
 
+            Log::info('Wallet Transactions', [
+                'status' => 'Success',
+                'message' => 'Wallet Transactions',
+                'data' => $transactions
+            ]);
+
             return response()->json([
                 'success' => true,
                 'data' => [
@@ -87,6 +93,29 @@ class WalletController extends Controller
             }
 
             $wallet = $this->walletService->getOrCreateWallet($user);
+
+            Log::info('User data', [
+                'status' => 'Success',
+                'message' => 'User data',
+                'data' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'wallet_balance' => $user->wallet_balance ?? 0,
+                    'mobile' => $user->mobile ?? $user->phone ?? null,
+                    'wallet' => [
+                        'id' => $wallet->id,
+                        'wallet_id' => $wallet->wallet_id,
+                        'balance' => $wallet->balance,
+                        'status' => $wallet->status,
+                        'is_kyc_verified' => $wallet->is_kyc_verified,
+                        'daily_limit' => $wallet->daily_limit,
+                        'monthly_limit' => $wallet->monthly_limit,
+                        'total_loaded' => $wallet->total_loaded,
+                        'total_spent' => $wallet->total_spent
+                    ]
+                ]
+            ]);
 
             return response()->json([
                 'success' => true,
@@ -135,6 +164,12 @@ class WalletController extends Controller
                                   ->orderBy('created_at', 'desc')
                                   ->paginate($perPage);
 
+            Log::info('Transactions', [
+                'status' => 'Success',
+                'message' => 'Transactions',
+                'data' => $transactions
+            ]);
+
             return response()->json([
                 'success' => true,
                 'data' => $transactions
@@ -162,6 +197,18 @@ class WalletController extends Controller
             }
 
             $wallet = $this->walletService->getOrCreateWallet($user);
+
+            Log::info('Balance', [
+                'status' => 'Success',
+                'message' => 'Balance',
+                'data' => [
+                    'balance' => $user->wallet_balance ?? 0,
+                    'wallet_balance' => $wallet->balance,
+                    'wallet_id' => $wallet->wallet_id,
+                    'wallet_table_id' => $wallet->id,
+                    'status' => $wallet->status
+                ]
+            ]);
 
             return response()->json([
                 'success' => true,
@@ -223,11 +270,17 @@ class WalletController extends Controller
                 ]);
             }
 
+            Log::error('Payment processing error: ' . $result['message'], [
+                'user_id' => Auth::id(),
+                'amount' => $request->amount ?? null,
+                'trace' => $result['trace'] ?? null
+            ]);
+
             return response()->json([
                 'success' => false,
                 'message' => $result['message'] ?? 'Payment processing failed'
             ], 422);
-// dd($wallet);
+
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -278,6 +331,12 @@ class WalletController extends Controller
                 ]);
             }
 
+            Log::error('Add money error: ' . $result['message'], [
+                'user_id' => Auth::id(),
+                'amount' => $request->amount ?? null,
+                'trace' => $result['trace'] ?? null
+            ]);
+
             return response()->json([
                 'success' => false,
                 'message' => $result['message'] ?? 'Failed to add money to wallet'
@@ -316,6 +375,11 @@ class WalletController extends Controller
             if ($result['success']) {
                 return redirect()->route('wallet')->with('success', 'Money added successfully!');
             }
+
+            Log::error('Wallet callback error: ' . $result['message'], [
+                'callback_data' => $request->all(),
+                'trace' => $result['trace'] ?? null
+            ]);
 
             return redirect()->route('wallet')->with('error', $result['message'] ?? 'Payment failed!');
             

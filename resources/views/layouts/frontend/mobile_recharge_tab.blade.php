@@ -76,12 +76,15 @@
                                                         <option value="validity">Validity</option>
                                                     </select>
                                                 </div>
+                                                <div class="mb-3 w-100 d-flex align-items-center justify-content-end">
+                                                    <button class="rounded">Browse Plan</button>
+                                                </div>
                                                 <div class="mb-3" style="text-align:left;">
                                                     <label for="amount" class="form-label">Recharge Amount (₹)</label>
                                                     <input name="amount" type="number" class="form-control" id="amount" placeholder="Amount" min="1" max="10000" step="1" required>
                                                 </div>
                                                 <div class="mb-3">
-                                                    <button type="submit" class="col-12 btn gradient-bg martop10 text-white" id="submitBtn">
+                                                    <button type="submit" class="col-12 rounded" id="submitBtn">
                                                         <span id="btnText">Recharge Now</span>
                                                         <span id="btnSpinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
                                                     </button>

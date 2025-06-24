@@ -57,7 +57,7 @@ class Dth extends Model
         'mobile_no' => 'required|string|regex:/^[0-9]{10}$/',
         'amount' => 'required|numeric|min:1|max:10000',
         'transaction_id' => 'nullable|string|unique:dth_recharges',
-        'status' => 'in:pending,completed,failed'
+        'status' => 'in:pending,success,failed'
     ];
 
     public function user()
@@ -97,7 +97,7 @@ class Dth extends Model
     public function getStatusBadgeClassAttribute(): string
     {
         return match($this->status) {
-            'completed' => 'bg-success',
+            'success' => 'bg-success',
             'failed' => 'bg-danger',
             'pending' => 'bg-warning',
             default => 'bg-secondary'
@@ -158,7 +158,7 @@ class Dth extends Model
      */
     public function scopeSuccessful($query)
     {
-        return $query->where('status', 'completed');
+        return $query->where('status', 'success');
     }
 
     /**
@@ -211,7 +211,7 @@ class Dth extends Model
     {
         return [
             'pending' => 'Pending',
-            'completed' => 'Completed',
+            'success' => 'Success',
             'failed' => 'Failed'
         ];
     }

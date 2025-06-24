@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\CcBillPayment;
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 
 class CcBillPaymentSeeder extends Seeder
 {
@@ -38,6 +39,8 @@ class CcBillPaymentSeeder extends Seeder
                         'response_message' => 'Sample payment response',
                         'created_at' => now()->subDays(rand(1, 30)),
                     ]);
+
+                    
                 }
             }
         }

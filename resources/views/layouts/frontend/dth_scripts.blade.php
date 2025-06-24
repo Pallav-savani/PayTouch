@@ -1,4 +1,5 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
 $(document).ready(function() {
     // Load recharge records on page load
@@ -324,7 +325,7 @@ $(document).ready(function() {
         $('#reportCustomerNo').val('');
         $('#reportStatus').val('');
         $('#reportService').val('');
-        $('#reportTableBody').html('<tr><td colspan="7" class="text-center">Click Search to load transactions</td></tr>');
+        $('#reportTableBody').html('<tr><td colspan="8" class="text-center">Click Search to load transactions</td></tr>');
     });
 
     function fetchTransactionReport() {
@@ -369,7 +370,7 @@ $(document).ready(function() {
             },
             timeout: 15000,
             beforeSend: function() {
-                $('#reportTableBody').html('<tr><td colspan="7" class="text-center">Searching...</td></tr>');
+                $('#reportTableBody').html('<tr><td colspan="8" class="text-center">Searching...</td></tr>');
             },
             success: function(response) {
                 let data = [];
@@ -382,7 +383,7 @@ $(document).ready(function() {
                 }
                 let rows = '';
                 if (!data || data.length === 0) {
-                    rows = '<tr><td colspan="7" class="text-center text-muted">No transactions found for the selected criteria.</td></tr>';
+                    rows = '<tr><td colspan="8" class="text-center text-muted">No transactions found for the selected criteria.</td></tr>';
                 } else {
                     $.each(data, function(index, transaction) {
                         if (transaction) {
@@ -391,9 +392,21 @@ $(document).ready(function() {
                                 <td>${transaction.created_at ? new Date(transaction.created_at).toLocaleString() : '-'}</td>
                                 <td>${transaction.service ? transaction.service.toUpperCase() : '-'}</td>
                                 <td>${transaction.mobile_no || '-'}</td>
-                                                                <td>₹${transaction.amount ? parseFloat(transaction.amount).toFixed(2) : '0.00'}</td>
+                                <td>₹${transaction.amount ? parseFloat(transaction.amount).toFixed(2) : '0.00'}</td>
                                 <td>${transaction.transaction_id || '-'}</td>
                                 <td><span class="badge ${getStatusClass(transaction.status)}">${transaction.status || 'Pending'}</span></td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-outline-primary view-receipt-btn" 
+                                            data-id="${transaction.id}" 
+                                            data-date="${transaction.created_at}" 
+                                            data-service="${transaction.service}" 
+                                            data-mobile="${transaction.mobile_no}" 
+                                            data-amount="${transaction.amount}" 
+                                            data-txn-id="${transaction.transaction_id}" 
+                                            data-status="${transaction.status}">
+                                        <i class="fas fa-receipt"></i> View Receipt
+                                    </button>
+                                </td>
                             </tr>`;
                         }
                     });
@@ -410,11 +423,341 @@ $(document).ready(function() {
                 } else if (xhr.status === 500) {
                     errorMessage = 'Server error occurred.';
                 }
-                $('#reportTableBody').html(`<tr><td colspan="7" class="text-center text-danger">${errorMessage}</td></tr>`);
+                $('#reportTableBody').html(`<tr><td colspan="8" class="text-center text-danger">${errorMessage}</td></tr>`);
                 showToast(errorMessage, 'error');
             }
         });
     }
+
+    $(document).on('click', '.view-receipt-btn', function() {
+        const data = {
+            id: $(this).data('id'),
+            date: $(this).data('date'),
+            service: $(this).data('service'),
+            mobile: $(this).data('mobile'),
+            amount: $(this).data('amount'),
+            txnId: $(this).data('txn-id'),
+            status: $(this).data('status')
+        };
+
+        showReceiptModal(data);
+    });
+
+
+    // Updated showReceiptModal function with better PDF styling
+    function showReceiptModal(data) {
+        const formattedDate = data.date ? new Date(data.date).toLocaleString() : '-';
+        const statusClass = getReceiptStatusClass(data.status);
+        
+        const receiptHtml = `
+            <div class="receipt-container" id="receiptContent">
+                <div class="receipt-header">
+                    <div class="logo-container">
+                        <img src="{{ asset('images/PayTouch_logo.png') }}" alt="BBPS Assured" class="receipt-logo">
+                        <img src="{{ asset('images/bbps.jpg') }}" alt="BBPS Assured" class="receipt-logo-b">
+                    </div>
+                    <h5 style="margin: 10px 0; color: #333; text-align: center; font-size: 18px; font-weight: bold;">DTH Recharge Receipt</h5>
+                    <hr style="border: 1px dashed #333; margin: 15px 0;">
+                </div>
+                
+                <div class="receipt-body" style="padding: 15px 0;">
+                    <table style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;">
+                        <tr style="margin-bottom: 8px;">
+                            <td style="padding: 5px 0; font-weight: bold; width: 50%;">Receipt ID:</td>
+                            <td style="padding: 5px 0; text-align: right;">#${data.id || '-'}</td>
+                        </tr>
+                        <tr style="margin-bottom: 8px;">
+                            <td style="padding: 5px 0; font-weight: bold;">Date:</td>
+                            <td style="padding: 5px 0; text-align: right;">${formattedDate}</td>
+                        </tr>
+                        <tr style="margin-bottom: 8px;">
+                            <td style="padding: 5px 0; font-weight: bold;">Service:</td>
+                            <td style="padding: 5px 0; text-align: right;">${data.service ? data.service.toUpperCase() : '-'}</td>
+                        </tr>
+                        <tr style="margin-bottom: 8px;">
+                            <td style="padding: 5px 0; font-weight: bold;">Mobile No.:</td>
+                            <td style="padding: 5px 0; text-align: right;">${data.mobile || '-'}</td>
+                        </tr>
+                        <tr style="margin-bottom: 8px;">
+                            <td style="padding: 5px 0; font-weight: bold;">Amount:</td>
+                            <td style="padding: 5px 0; text-align: right; font-weight: bold; color: #007bff;">₹${data.amount ? parseFloat(data.amount).toFixed(2) : '0.00'}</td>
+                        </tr>
+                        <tr style="margin-bottom: 8px;">
+                            <td style="padding: 5px 0; font-weight: bold;">Transaction ID:</td>
+                            <td style="padding: 5px 0; text-align: right; font-size: 12px;">${data.txnId || '-'}</td>
+                        </tr>
+                        <tr style="margin-bottom: 8px;">
+                            <td style="padding: 5px 0; font-weight: bold;">Status:</td>
+                            <td style="padding: 5px 0; text-align: right;">
+                                <span style="padding: 3px 8px; border-radius: 3px; font-size: 12px; font-weight: bold; 
+                                            ${getInlineStatusStyle(data.status)}">${data.status || 'Pending'}</span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div class="receipt-footer" style="text-align: center; border-top: 1px dashed #333; padding-top: 15px; margin-top: 15px;">
+                    <p style="margin: 5px 0; font-size: 16px; font-weight: bold; color: #333;">Thank you for using our service!</p>
+                    <p style="margin: 5px 0; font-size: 14px; color: #666;">BBPS Assured - Secure & Reliable</p>
+                </div>
+            </div>
+        `;
+        
+        // Create modal if it doesn't exist
+        if ($('#receiptModal').length === 0) {
+            $('body').append(`
+                <div class="modal fade" id="receiptModal" tabindex="-1" aria-labelledby="receiptModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="receiptModalLabel">Transaction Receipt</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body" id="receiptModalBody">
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-primary" id="downloadReceiptBtn">
+                                    <i class="fas fa-download"></i> Download PDF
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `);
+        }
+        
+        $('#receiptModalBody').html(receiptHtml);
+        $('#receiptModal').modal('show');
+    }
+
+    function getReceiptStatusClass(status) {
+        switch (status) {
+            case 'Success': 
+            case 'success': 
+                return 'status-success';
+            case 'Failed': 
+            case 'failed': 
+                return 'status-failed';
+            case 'Pending':
+            case 'pending':
+            default: 
+                return 'status-pending';
+        }
+    }
+
+    function getInlineStatusStyle(status) {
+        switch (status) {
+            case 'Success': 
+            case 'success': 
+                return 'background-color: #28a745; color: white;';
+            case 'Failed': 
+            case 'failed': 
+                return 'background-color: #dc3545; color: white;';
+            case 'Pending':
+            case 'pending':
+            default: 
+                return 'background-color: #ffc107; color: #212529;';
+        }
+    }
+
+    // Download PDF functionality
+    $(document).on('click', '#downloadReceiptBtn', function() {
+        const receiptContent = document.getElementById('receiptContent');
+        
+        if (!receiptContent) {
+            showToast('Receipt content not found', 'error');
+            return;
+        }
+        
+        // Show loading state
+        const btn = $(this);
+        const originalText = btn.html();
+        btn.html('<span class="spinner-border spinner-border-sm"></span> Generating PDF...');
+        btn.prop('disabled', true);
+        
+        // Use html2pdf library
+        if (typeof html2pdf !== 'undefined') {
+            const opt = {
+                margin: [0.5, 0.5, 0.5, 0.5],
+                filename: `DTH_Receipt_${Date.now()}.pdf`,
+                image: { 
+                    type: 'jpeg', 
+                    quality: 0.98 
+                },
+                html2canvas: { 
+                    scale: 3,
+                    useCORS: true,
+                    allowTaint: false,
+                    backgroundColor: '#ffffff',
+                    width: 400,
+                    height: 800
+                },
+                jsPDF: { 
+                    unit: 'in', 
+                    format: [5, 7], 
+                    orientation: 'portrait'
+                },
+                pagebreak: { mode: 'avoid-all' }
+            };
+            
+            // Clone the content and apply PDF-specific styles
+            const clonedContent = receiptContent.cloneNode(true);
+            clonedContent.style.width = '380px';
+            clonedContent.style.padding = '20px';
+            clonedContent.style.fontFamily = 'Arial, sans-serif';
+            clonedContent.style.fontSize = '14px';
+            clonedContent.style.lineHeight = '1.4';
+            clonedContent.style.color = '#000';
+            clonedContent.style.backgroundColor = '#fff';
+            
+            // Handle image loading for PDF
+            const img = clonedContent.querySelector('.receipt-logo');
+            if (img) {
+                img.style.maxWidth = '100px';
+                img.style.height = 'auto';
+                img.style.display = 'block';
+                img.style.margin = '0 auto 10px';
+                
+                // Convert image to base64 for better PDF compatibility
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const tempImg = new Image();
+                
+                tempImg.onload = function() {
+                    canvas.width = this.width;
+                    canvas.height = this.height;
+                    ctx.drawImage(this, 0, 0);
+                    
+                    try {
+                        const dataURL = canvas.toDataURL('image/jpeg', 0.9);
+                        img.src = dataURL;
+                        
+                        // Generate PDF after image is processed
+                        generatePDF();
+                    } catch (e) {
+                        console.log('Image conversion failed, proceeding without image');
+                        img.style.display = 'none';
+                        generatePDF();
+                    }
+                };
+                
+                tempImg.onerror = function() {
+                    console.log('Image loading failed, proceeding without image');
+                    img.style.display = 'none';
+                    generatePDF();
+                };
+                
+                tempImg.crossOrigin = 'anonymous';
+                tempImg.src = img.src;
+                
+                function generatePDF() {
+                    html2pdf().set(opt).from(clonedContent).save()
+                        .then(() => {
+                            showToast('PDF downloaded successfully!', 'success');
+                        })
+                        .catch((error) => {
+                            console.error('PDF generation failed:', error);
+                            showToast('Failed to generate PDF', 'error');
+                            // Fallback to print
+                            openPrintWindow(clonedContent);
+                        })
+                        .finally(() => {
+                            btn.html(originalText);
+                            btn.prop('disabled', false);
+                        });
+                }
+            } else {
+                // No image, generate PDF directly
+                html2pdf().set(opt).from(clonedContent).save()
+                    .then(() => {
+                        showToast('PDF downloaded successfully!', 'success');
+                    })
+                    .catch((error) => {
+                        console.error('PDF generation failed:', error);
+                        showToast('Failed to generate PDF', 'error');
+                        // Fallback to print
+                        openPrintWindow(clonedContent);
+                    })
+                    .finally(() => {
+                        btn.html(originalText);
+                        btn.prop('disabled', false);
+                    });
+            }
+        } else {
+            // Fallback: open print dialog
+            openPrintWindow(receiptContent);
+            btn.html(originalText);
+            btn.prop('disabled', false);
+        }
+    });
+
+    function openPrintWindow(content) {
+    const printWindow = window.open('', '_blank', 'width=600,height=800');
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+            <head>
+                <title>DTH Receipt</title>
+                <style>
+                    body { 
+                        font-family: Arial, sans-serif; 
+                        margin: 20px; 
+                        background: white;
+                        color: black;
+                    }
+                    .receipt-container { 
+                        max-width: 400px; 
+                        margin: 0 auto; 
+                        border: 1px solid #ccc;
+                        padding: 20px;
+                    }
+                    .receipt-header { 
+                        text-align: center; 
+                        border-bottom: 2px dashed #333; 
+                        padding-bottom: 15px; 
+                        margin-bottom: 15px; 
+                    }
+                    .receipt-logo { 
+                        max-width: 120px; 
+                        margin-bottom: 10px; 
+                    }
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                    }
+                    td {
+                        padding: 5px 0;
+                        border-bottom: 1px dotted #ccc;
+                    }
+                    .receipt-footer { 
+                        text-align: center; 
+                        border-top: 2px dashed #333; 
+                        padding-top: 15px; 
+                        margin-top: 15px; 
+                        font-size: 12px; 
+                    }
+                    @media print {
+                        body { margin: 0; }
+                        .receipt-container { border: none; }
+                    }
+                </style>
+            </head>
+            <body>
+                ${content.outerHTML}
+                <script>
+                    window.onload = function() {
+                        window.print();
+                        window.onafterprint = function() {
+                            window.close();
+                        };
+                    };
+                
+            </body>
+        </html>
+    `);
+    printWindow.document.close();
+}
 
     $('#searchForm').on('submit', function(e) {
         e.preventDefault();

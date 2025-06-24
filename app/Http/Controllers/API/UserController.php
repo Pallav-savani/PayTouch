@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use \Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -35,7 +36,13 @@ class UserController extends Controller
             'mobile' => $request->mobile,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'email_verified_at' => $request->email_verified_at->datetime.now(),
+            'email_verified_at' => now(),
+        ]);
+
+        Log::info('User Registered Successfully', [
+            'status' => $request->all(),
+            'message' => 'User Registered Successfully',
+            'data' => $user
         ]);
 
         return response()->json([

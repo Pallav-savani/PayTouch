@@ -21,8 +21,8 @@
         crossorigin="anonymous"></script>
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
-</head>
-<body>
+</head>                 
+<body>      
     <div class="main">
         <header class="header">
             <div class="container-fluid  mb-3">
@@ -44,7 +44,7 @@
                         <div class="text-center">
                             <h5 class="card-title">Customer Care</h5>
                             <h5 class="card-title">Working Hours : 10:00 am to 8:00 pm</h5>
-                            <p class="card-text">+91 75675 25559</p>
+                            <p class="card-text">+91 75675 25557</p>
                             <div class="justify-content-center">
                                   <a href="#" class="text-decoration-none">
                                     <img class="mx-2 invert1" style="height: 25px;" src="/css/assets/home.png" title="Home" alt="Home">

@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Models\Wallet;
 use App\Services\MobiKwikService;
 use Illuminate\Support\Facades\Auth;
+use \Illuminate\Support\Facades\Log;
 
 class DthController extends Controller
 {
@@ -159,6 +160,12 @@ class DthController extends Controller
             // If recharge failed, refund the amount
             if ($dthRecharge->status === 'failed') {
                 $this->refundUserBalance($user, $rechargeAmount);
+
+                Log::info('DTH Recharge API', [
+                    'status' => $request->all(),
+                    'message' => 'DTH Recharge API',
+                    'data' => $dthRecharge
+                ]);
                 
                 return response()->json([
                     'status' => 'failed',
@@ -166,6 +173,13 @@ class DthController extends Controller
                     'data' => $dthRecharge
                 ], 200);
             } else {
+
+                Log::info('DTH Recharge API', [
+                    'status' => $request->all(),
+                    'message' => 'DTH Recharge API',
+                    'data' => $dthRecharge
+                ]);
+
                 return response()->json([
                     'status' => 'success',
                     'message' => 'DTH recharge initiated successfully',
@@ -230,6 +244,12 @@ class DthController extends Controller
             }
 
             $dthRecharge = Dth::where('user_id', $user->id)->findOrFail($id);
+
+            Log::info('Transaction Details retrived successfully', [
+                'status' => $id->all(),
+                'message' => 'Transaction Details',
+                'data' => $dthRecharge
+            ]);
             
             return response()->json([
                 'status' => 'success',
@@ -440,6 +460,12 @@ class DthController extends Controller
             // Pagination
             $perPage = $request->get('per_page', 20);
             $pendingTransactions = $query->paginate($perPage);
+
+            Log::info('Pending Transaction Details retrived successfully', [
+                'status' => $request->all(),
+                'message' => 'Pending Transaction Details',
+                'data' => $query
+            ]);
             
             return response()->json([
                 'status' => 'success',
@@ -481,6 +507,12 @@ class DthController extends Controller
             // Process the recharge again
             $this->processRecharge($dthRecharge);
             $dthRecharge = $dthRecharge->fresh();
+
+            Log::info('Pending Transaction Details retrived successfully', [
+                'status' => $id->all(),
+                'message' => 'Pending Transaction Details',
+                'data' => $dthRecharge
+            ]);
             
             return response()->json([
                 'status' => 'success',
@@ -535,6 +567,12 @@ class DthController extends Controller
                     $successCount++;
                 }
             }
+
+            Log::info('Retry All Transaction Details', [
+                'status' => $transaction->all(),
+                'message' => 'Retry All Transaction Details',
+                'data' => $pendingTransactions
+            ]);
             
             return response()->json([
                 'status' => 'success',
@@ -585,6 +623,12 @@ class DthController extends Controller
             // Pagination
             $perPage = $request->get('per_page', 20);
             $failedTransactions = $query->paginate($perPage);
+
+            Log::info('Retry All Transaction Details', [
+                'status' => $request->all(),
+                'message' => 'Retry All Transaction Details',
+                'data' => $failedTransactions
+            ]);
             
             return response()->json([
                 'status' => 'success',
@@ -629,6 +673,12 @@ class DthController extends Controller
             // Process the recharge again
             $this->processRecharge($dthRecharge);
             $dthRecharge = $dthRecharge->fresh();
+
+            Log::info('Retry Failed Transaction Details', [
+                'status' => $dthRecharge->all(),
+                'message' => 'Retry Failed Transaction Details',
+                'data' => $dthRecharge
+            ]);
             
             return response()->json([
                 'status' => 'success',
@@ -685,6 +735,12 @@ class DthController extends Controller
                     $successCount++;
                 }
             }
+
+            Log::info('Retry All Transaction Details', [
+                'status' => $transaction->all(),
+                'message' => 'Retry All Transaction Details',
+                'data' => $transaction
+            ]);
             
             return response()->json([
                 'status' => 'success',

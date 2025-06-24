@@ -1,16 +1,7 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Welcome to PayTouch - Web App</title>
-        <!-- Fonts -->
+@include('layouts.app')
 
-    </head>
 <body>
-    @include('layouts.app');
-
-        <section class="content-wrapper mb-4">
+    <section class="content-wrapper mb-4">
         <div class="container">
             <div class="user">
                 <div class="row mt-4 justify-content-center">
@@ -267,4 +258,3 @@
         </div>
     </section>
 </body>
-</html>

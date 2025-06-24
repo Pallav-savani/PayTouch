@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str; 
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use \Illuminate\Support\Facades\Log;
 
 
 class RechargeApiSuccessController extends Controller
@@ -136,6 +137,12 @@ class RechargeApiSuccessController extends Controller
                 'ad9' => $request->ad9,
                 'additional_parms_payment_api' => $request->additional_parms_payment_api,
                 'biller_id' => $request->biller_id,
+            ]);
+
+            Log::info('Recharge API Success', [
+                'status' => 'success',
+                'message' => 'Recharge API Success',
+                'data' => $rechargeapisuccesscases
             ]);
 
             return response()->json([

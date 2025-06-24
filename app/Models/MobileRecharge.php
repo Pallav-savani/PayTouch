@@ -16,6 +16,7 @@ class MobileRecharge extends Model
         'circle',
         'amount',
         'txn_id',
+        'plan_type',
         'status'
     ];
 

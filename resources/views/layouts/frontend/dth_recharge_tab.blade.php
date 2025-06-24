@@ -36,7 +36,7 @@
                                         <input name="amount" type="number" class="form-control" id="amount" placeholder="Amount" min="1" max="10000" step="1" required>
                                     </div>
                                     <div class="mb-3">
-                                        <button type="submit" class="col-12 btn gradient-bg martop10 text-white" id="submitBtn">
+                                        <button type="submit" class="col-12 rounded" id="submitBtn">
                                             <span id="btnText">Proceed to Recharge</span>
                                             <span id="btnSpinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
                                         </button>

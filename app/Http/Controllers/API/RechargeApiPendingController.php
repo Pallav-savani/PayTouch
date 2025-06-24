@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str; 
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use \Illuminate\Support\Facades\Log;
 
 
 class RechargeApiPendingController extends Controller
@@ -138,8 +139,14 @@ class RechargeApiPendingController extends Controller
                 'biller_id' => $request->biller_id,
             ]);
 
+            Log::info('Recharge API Pending Created', [
+                'status' => 'pending',
+                'message' => 'Recharge API Pending',
+                'data' => $rechargeapipending
+            ]);
+
             return response()->json([
-                'status' => 'success',
+                'status' => 'pending',
                 'message' => 'Recharge success case created successfully',
                 'data' => $rechargeapipending
             ], 201);

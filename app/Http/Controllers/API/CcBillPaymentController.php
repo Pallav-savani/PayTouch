@@ -94,6 +94,12 @@ class CcBillPaymentController extends Controller
                 }
             }
 
+            Log::info('CC bill payments retrieved successfully', [
+                'status' => 'success',
+                'message' => 'CC Bill Fetched Successfully',
+                'data' => $items
+            ]);
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'CC bill payments retrieved successfully',
@@ -267,6 +273,12 @@ class CcBillPaymentController extends Controller
             } catch (\Exception $e) {
                 Log::warning('Failed to decrypt credit card number for record ID: ' . $ccBillPayment->id);
             }
+
+            Log::info('CC bill payment initiated successfully', [
+                'status' => 'Success',
+                'message' => 'CC bill payment initiated successfully',
+                'data' => $ccBillPayment
+            ]);
 
             return response()->json([
                 'status' => 'success',

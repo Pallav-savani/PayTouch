@@ -28,10 +28,8 @@ nav {
 
 :root {
   --bg-gradient: linear-gradient(90deg,
-      #a960ee 0%,
-      #ff333d 100%,
-      #90e0ff 85%,
-      #ffcb57 100%);
+     
+      #53a3e9 100%);
 }
 
 .gradient-bg {
@@ -111,11 +109,7 @@ th {
     display: flex;
     align-items: center;
     /* gap: 6px; */
-    background: linear-gradient(90deg,
-      #a960ee 1%,
-      /* #90e0ff 0%, */
-      #ff333d 100%,
-      #ffcb57 100%);
+    background: linear-gradient(90deg, #53a3e9 100%);
     }
 
 .os-box {
@@ -128,11 +122,7 @@ th {
     margin-top: 500px;
     margin-right:600px; 
     color: #fff;
-    background: linear-gradient(90deg,
-      #a960ee 8%,
-      /* #90e0ff 0%, */
-      #ff333d 100%,
-      #ffcb57 100%);
+    background:  linear-gradient(90deg, #53a3e9 100%);
 }
 
  
@@ -143,7 +133,7 @@ th {
 
 .blank-box {
   padding-top: 5px;
-  background-color: #94a9b6;
+  background-color: #13a3e7;
   color: #fff;
   font-weight: bolder;
   font-size: 16px;
@@ -547,7 +537,7 @@ img{
 
 .service-title h2 {
   text-align: center;
-  color: #c551b4;
+  color: #000000;
 }
 
 
@@ -564,10 +554,10 @@ img{
 
 .user-service-tab .nav-pills .nav-link.active,
 .nav-pills .show>.nav-link {
-  background-color: transparent;
+  background-color: rgb(78, 171, 233);; 
   border-radius: 0;
-  border-bottom: 1px solid #e63356 !important;
-  color: #e63356;
+  border-bottom: 1px solid #f8f6f7 !important;
+  color: #fff;
 }
 
 .user-service-tab .tab-content {

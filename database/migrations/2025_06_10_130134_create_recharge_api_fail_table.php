@@ -28,7 +28,7 @@ return new class extends Migration
             $table->string('additional_parms_payment_api')->nullable(); // Transaction ID from recharges table
             $table->string('biller_id')->nullable(); // Transaction ID from recharges table
             $table->string('view_bill')->nullable(); // Transaction ID from recharges table
-            $table->enum('status', ['success', 'pending', 'fail'])->default('success');  // Default status set to 'success'
+            $table->enum('status', ['success', 'pending', 'failed'])->default('success');  // Default status set to 'success'
             $table->timestamps();
         });
     }
