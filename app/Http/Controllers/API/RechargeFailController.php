@@ -140,14 +140,14 @@ class RechargeFailController extends Controller
                 'biller_id' => $request->biller_id,
             ]);
 
-            Log::info('Recharge pending case created successfully', [
-                'status' => $request->all(),
-                'message' => 'Recharge Failed case created successfully',
+            Log::info('Recharge Failed', [
+                'status' => 'failed',
+                'message' => 'Recharge Failed',
                 'data' => $rechargefailcase
             ]);
 
             return response()->json([
-                'status' => 'success',
+                'status' => 'failed',
                 'message' => 'Recharge Falied case created successfully',
                 'data' => $rechargefailcase
             ], 201);

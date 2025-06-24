@@ -20,28 +20,24 @@ Route::get('/welcome', function () {
     return view('welcome');
 })->name('home');
 
-Route::get('/dth', function () {
+Route::get('/DTH', function () {
     return view('layouts.frontend.dth');
 })->name('dth');
 
-Route::get('/mobile', function () {
+Route::get('/mobile recharges', function () {
     return view('layouts.frontend.mobile_recharge_tab');
 })->name('mobile');
 
-Route::get('/loadWallet', function () {
-    return view('layouts.frontend.load_wallet_tab');
-})->name('loadWallet');
-
 // Wallet view route (only the view, no API logic)
-Route::get('/wallet', function () {
+Route::get('/Load Wallet', function () {
     return view('layouts.frontend.wallet');
 })->name('wallet');
 
-Route::get('/ccbill', function () {
+Route::get('/CCBill', function () {
     return view('layouts.frontend.ccbill');
 })->name('ccbill');
 
-Route::get('/fastag', function () {
+Route::get('/Fastag recharges', function () {
     return view('layouts.frontend.fastag');
 })->name('fastag');
 

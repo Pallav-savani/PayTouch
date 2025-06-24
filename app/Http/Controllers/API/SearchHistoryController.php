@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
+use \Illuminate\Support\Facades\Log;
 
 class SearchHistoryController extends Controller
 {
@@ -50,6 +51,12 @@ class SearchHistoryController extends Controller
                 'user_agent' => $request->userAgent(),
             ]);
 
+            Log::info('Search history saved successfully', [
+                'status' => $request->all(),
+                'message' => 'Search history saved successfully',
+                'data' => $searchHistory
+            ]);
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Search history saved successfully',
@@ -63,10 +70,10 @@ class SearchHistoryController extends Controller
             ], 201);
 
         } catch (\Exception $e) {
-            // \Log::error('Search History Store Error: ' . $e->getMessage(), [
-            //     'request_data' => $request->all(),
-            //     'trace' => $e->getTraceAsString()
-            // ]);
+            Log::error('Search History Store Error: ' . $e->getMessage(), [
+                'request_data' => $request->all(),
+                'trace' => $e->getTraceAsString()
+            ]);
 
             return response()->json([
                 'status' => 'error',

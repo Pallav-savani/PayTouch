@@ -1,3 +1,56 @@
+<head>
+<style>
+    .receipt-container {
+        max-width: 400px;
+        margin: 0 auto;
+        background: white;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        padding: 20px;
+        font-family: 'Courier New', monospace;
+    }
+    .receipt-header {
+        text-align: center;
+        border-bottom: 2px dashed #333;
+        padding-bottom: 15px;
+        margin-bottom: 15px;
+    }
+    .receipt-logo {
+        max-width: 160px;
+        margin-bottom: 10px;
+    }
+    .receipt-logo-b{
+        width: 100px !important;
+        object-fit: contain;
+    }
+    .logo-container{
+        width: 100%;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+    }
+    .logo-container img{
+        width: 100%;
+        object-fit: contain;
+    }
+    .receipt-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+    .receipt-footer {
+        text-align: center;
+        border-top: 2px dashed #333;
+        padding-top: 15px;
+        margin-top: 15px;
+        font-size: 12px;
+    }
+    .status-success { color: #28a745; font-weight: bold; }
+    .status-failed { color: #dc3545; font-weight: bold; }
+    .status-pending { color: #ffc107; font-weight: bold; }
+</style>
+</head>
 <div class="tab-pane fade" id="v-pills-report" role="tabpanel"
     aria-labelledby="v-pills-report-tab" tabindex="0">
     <div class="container-fluid" style="padding: 0 !important;">
@@ -64,10 +117,11 @@
                                             <th>Amount</th>
                                             <th>Transaction ID</th>
                                             <th>Status</th>
+                                            <th>Action</th>
                                         </tr>
                                     </thead>
                                     <tbody id="reportTableBody">
-                                        <tr><td colspan="7" class="text-center">Click Search to load transactions</td></tr>
+                                        <tr><td colspan="8" class="text-center">Click Search to load transactions</td></tr>
                                     </tbody>
                                 </table>
                             </div>

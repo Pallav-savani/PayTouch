@@ -141,14 +141,14 @@ class RechargePendingController extends Controller
                 'biller_id' => $request->biller_id,
             ]);
 
-            Log::info('Recharge pending case created successfully', [
-                'status' => $request->all(),
+            Log::info('Recharge pending', [
+                'status' => 'Pending',
                 'message' => 'Recharge pending case created successfully',
                 'data' => $rechargependingcases
             ]);
 
             return response()->json([
-                'status' => 'success',
+                'status' => 'pending',
                 'message' => 'Recharge pending case created successfully',
                 'data' => $rechargependingcases
             ], 201);

@@ -66,6 +66,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/recharge/history', [MobileRechargeController::class, 'history']);
     Route::get('/recharge/search', [MobileRechargeController::class, 'search']);
     Route::get('/recharge/statistics', [MobileRechargeController::class, 'statistics']);
+Route::get('/recharge/plans', [MobileRechargeController::class, 'plans']);
+
+
 
 });
 
