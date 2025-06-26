@@ -1,48 +1,43 @@
 <div class="tab-pane fade show active" id="v-pills-cc-fetch" role="tabpanel"
     aria-labelledby="v-pills-cc-fetch-tab" tabindex="0">
     <div class="container-fluid">
-        <div class="row martop justify-content-center">
-            <div class="col-lg-10">
-                <div class="d-flex justify-content-between align-items-start flex-wrap">
-                    
-                    <!-- Fetch Form -->
-                    <div class="flex-fill me-4 " style="min-width: 280px;">
-                        <form id="ccFetchBillForm">
-                            <h5 class="formobile col-md-6">Credit Card Bill</h5>
-                            <h2>Fetch Bill</h2>
-
-                            <div class="form-group mb-3">
-                                <label>Credit Card Number:</label>
-                                <input type="text" id="ccNumber" name="cn" class="form-control"
-                                    placeholder="Enter Credit Card Number" required />
+        <div class="row martop align-items-center">
+            <div class="col-md-8 offset-md-2">
+                <div class="row">
+                    <div class="col-md-8">
+                        <form id="ccBillForm" class="service p-3 rounded">
+                            <h4 class="formobile mb-3 text-center">CC Bill Payment</h4>
+                            <div class="mb-3">
+                                <label for="ccNumber" class="form-label">Credit Card Number</label>
+                                <input type="text" class="form-control" id="ccNumber" placeholder="Enter card number" maxlength="16" required>
                             </div>
-                            <div class="form-group mb-3">
+                            <div class=" mb-3">
                                 <label>Mobile Number:</label>
                                 <input type="text" id="mobileNumber" name="mobile" class="form-control"
                                     placeholder="Enter Mobile Number" required />
                             </div>
-                            <button type="submit" id="fetchBillBtn" class="btn btn-primary">
-                                <span id="fetchBtnSpinner" class="spinner-border spinner-border-sm d-none"
-                                    role="status"></span>
-                                <span id="fetchBtnText">Fetch</span>
-                            </button>
+                            <div class="mb-3">
+                                <button type="submit" class="btn btn-primary w-100">Fetch </button>
+                            </div>
                         </form>
                     </div>
-
-                    <!-- BBPS Logo -->
-                    <div class="text-end">
-                        <img src="images/bbps.jpg" alt="BBPS Logo" style="width: 150px;" />
+                    <div class="col-md-4 d-flex align-items-center justify-content-end">
+                        <div class="text-end w-100">
+                            <img src="images/bbps.jpg" alt="BBPS Logo" style="width: 130px; margin-left:500px; margin-bottom:150px;" />
+                        </div>
                     </div>
                 </div>
-
-                <!-- Bills Table -->
-                <div id="ccBillsContainer" class="mt-4">
-                    <h4>Credit Card Bills</h4>
-                    <div class="table-responsive">
-                        <table class="table table-striped table-bordered">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>ID</th>
+            </div>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="row martop">
+            <div class="col-12">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                              <th>ID</th>
                                     <th>User ID</th>
                                     <th>Credit Card Number</th>
                                     <th>Opt</th>
@@ -55,13 +50,12 @@
                                     <th>Transaction ID</th>
                                     <th>Operator Ref.</th>
                                     <th>Processed At</th>
-                                </tr>
-                            </thead>
-                            <tbody id="ccBillsTableBody">
-                                <!-- Bills will be populated here -->
-                            </tbody>
-                        </table>
-                    </div>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Table rows here -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

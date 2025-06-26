@@ -57,3 +57,7 @@ Route::get('/my_account', function () {
 Route::get('/utility_bills', function () {
     return view('layouts.frontend.utility_bills');
 })->name('utilitybills');
+
+Route::get('/header', function () {
+    return view('layouts.header');
+})->name('header');

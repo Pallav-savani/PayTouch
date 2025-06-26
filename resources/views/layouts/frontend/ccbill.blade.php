@@ -1,220 +1,31 @@
 @include('layouts.header')
-<style>
-
-/* Form Elements */
-form {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 0 20px;
-}
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-label {
-  display: block;
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-
-input[type="text"],
-input[type="number"],
-input[type="email"],
-input[type="date"],
-select,
-textarea {
-  width: 100%;
-  padding: 10px 12px;
-  font-size: 14px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  box-sizing: border-box;
-  transition: border 0.3s ease;
-  margin-bottom: 12px;
-}
-
-input:focus,
-select:focus,
-textarea:focus {
-  border-color: #0066cc;
-  outline: none;
-}
-
-/* Buttons */
-button,
-input[type="submit"] {
-  background-color: #003399;
-  color: white;
-  padding: 12px 20px;
-  border: none;
-  border-radius: 6px;
-  font-size: 15px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-/* Tables */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-  overflow-x: auto;
-}
-
-table thead {
-  background-color: #003399;
-  color: #ffffff;
-}
-
-table th,
-table td {
-  padding: 12px 15px;
-  border: 1px solid #ddd;
-  text-align: left;
-}
-
-table tbody tr:nth-child(even) {
-  background-color: #f9f9f9;
-}
-
-/* Status Badges */
-.status-success {
-  color: green;
-  font-weight: bold;
-}
-
-.status-failed {
-  color: red;
-  font-weight: bold;
-}
-
-.img-box{
-  width: 100%;
-  display: flex;
-  justify-content: flex-end;
-}
-.img-box-sms{
-  width: 33%;
-  display: flex;
-  justify-content: flex-end;
-}
-.right-logo {
-  width: 150px;
-  display: block;
-}
-.receipt{
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-.sms_recpt_logo{
-  width: 250px;
-}
-.logo{
-  width: 100px;
-}
-
-.status-pending {
-  color: orange;
-  font-weight: bold;
-}
-
-#ccFetchBillForm{
-  max-width: 100%;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  margin: 0;
-  border-bottom: 1px solid #d4d4d4;
-  padding-bottom: 20px;
-}
-
-.form-group{
-  width: 50%;
-}
-
-
-/* Responsive Design */
-@media screen and (max-width: 992px) {
-  .right-logo {
-    margin: 10px auto;
-    display: block;
-  }
-
-  nav button {
-    flex: 1 1 50%;
-    text-align: center;
-  }
-
-  .tab-content {
-    padding: 20px 15px;
-  }
-}
-
-@media screen and (max-width: 768px) {
-  nav {
-    flex-direction: column;
-  }
-
-  nav button {
-    flex: 1 1 100%;
-  }
-
-
-  form {
-    padding: 0 10px;
-  }
-
-
-  table,
-  thead,
-  tbody,
-  th,
-  td,
-  tr {
-    display: block;
-    width: 100%;
-  }
-
-  table thead {
-    display: none;
-  }
-
-  table tr {
-    margin-bottom: 15px;
-    border: 1px solid #ddd;
-    padding: 10px;
-    border-radius: 5px;
-    background-color: #fff;
-  }
-
-  table td {
-    position: relative;
-    padding-left: 50%;
-    text-align: left;
-  }
-
-  table td::before {
-    content: attr(data-label);
-    position: absolute;
-    left: 15px;
-    font-weight: bold;
-    color: #555;
-  }
-}
-
-    table {
-              width: 51%;
-              border-collapse: collapse;
-              margin-top:0px ;
-              font-size: 14px;
-              border: none;
-              
-    }
-</style>
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>CC Bill Pay</title>
+    <link rel="stylesheet" href="{{ asset('css/ccbill.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+</head>
+<body><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>CC Bill Pay</title>
+    <link rel="stylesheet" href="{{ asset('css/ccbill.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+</head>
+<body>
+    <!-- Your page content here -->
+</body>
+</html>
 
 <div class="row" style="max-width: 100%;">
     <div class="container my-4">
@@ -255,5 +66,8 @@ table tbody tr:nth-child(even) {
         </div>
     </div>
 </div>
+</body>
+</html>
 
 @include('layouts.frontend.ccbill_script')
+

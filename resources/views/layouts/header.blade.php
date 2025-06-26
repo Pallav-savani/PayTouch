@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title></title>
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/ccbill.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/header.css') }}"> 
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
@@ -47,13 +46,13 @@
                             <p class="card-text">+91 75675 25557</p>
                             <div class="justify-content-center">
                                   <a href="#" class="text-decoration-none">
-                                    <img class="mx-2 invert1" style="height: 25px;" src="/css/assets/home.png" title="Home" alt="Home">
+                                    <img class="mx-2 invert1 customer-care-icon" src="/css/assets/home.png" title="Home" alt="Home">
                                   </a>
-                                  <img class="mx-2 invert1" style="height: 25px;" src="/css/assets/statement.png" title="MiniStatement" alt="Statement">
-                                    <img class="mx-2 invert1" style="height: 25px;" src="/css/assets/download.png" title="Download" alt="Download">
-                                    <img class="mx-2 invert1" style="height: 25px;" src="/css/assets/password1.png" title="ChangePassword" alt="Password">
+                                  <img class="mx-2 invert1 customer-care-icon" src="/css/assets/statement.png" title="MiniStatement" alt="Statement">
+                                    <img class="mx-2 invert1 customer-care-icon" src="/css/assets/download.png" title="Download" alt="Download">
+                                    <img class="mx-2 invert1 customer-care-icon" src="/css/assets/password1.png" title="ChangePassword" alt="Password">
                                     <a href="#" onclick="logout()" class="text-decoration-none">
-                                        <img class="mx-2 invert1" style="height: 25px;" src="/css/assets/logout1.png" title="Logout" alt="Logout">
+                                        <img class="mx-2 invert1 customer-care-icon" src="/css/assets/logout1.png" title="Logout" alt="Logout">
                                     </a>
                             </div>
                           
@@ -72,12 +71,19 @@
                             <h2>{{ ucwords(str_replace(['-', '_'], ' ', Request::segment(1) ?: 'Home')) }}</h2>
                         <div class="text-end">
                             <a href="#" class="d-inline-block">
-                                <img height="120px" src="{{ asset('images/bbps.jpg') }}" alt="BBPS Logo" />
+                                <img class="bbps-logo" src="{{ asset('images/bbps.jpg') }}" alt="BBPS Logo" />
                             </a>
                         </div>
                     </div>
 
-                        <div class="row">
+                        <!-- Hamburger button for mobile -->
+                        <button id="navToggleBtn" class="nav-toggle-btn d-lg-none" aria-label="Toggle navigation" type="button">
+                            <span class="nav-toggle-bar"></span>
+                            <span class="nav-toggle-bar"></span>
+                            <span class="nav-toggle-bar"></span>
+                        </button>
+                        <!-- Navigation links -->
+                        <div id="mainNavMenu" class="row collapse-nav">
                             <!-- <div class="col-auto mt-3"><a href=" {{ route('home')  }}" class="btn btn gradient-bg text-white">Home</a></div> -->
                             <div class="col-auto mt-3"><a href=" {{ route('dth')  }}" class="btn btn gradient-bg text-white">DTH</a></div>
                             <div class="col-auto mt-3"><a href="{{ route('mobile')  }}" class="btn btn gradient-bg text-white">Mobile Recharge</a></div>
@@ -393,6 +399,15 @@
 
 </script>
 
+<script>
+// Responsive nav toggle
+$(function() {
+    $('#navToggleBtn').on('click', function() {
+        $('#mainNavMenu').toggleClass('nav-open');
+        $(this).toggleClass('open');
+    });
+});
+</script>
 </body>
 </html>
 

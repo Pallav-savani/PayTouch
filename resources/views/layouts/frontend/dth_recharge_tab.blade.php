@@ -1,6 +1,6 @@
 <div class="tab-pane fade show active" id="v-pills-home" role="tabpanel"
     aria-labelledby="v-pills-home-tab" tabindex="0">
-    <div class="container-fluid">
+    <div class="">
         <div class="row martop ">
             <div id="entry" class="col-md-4">
                 <div class=" row formobile">

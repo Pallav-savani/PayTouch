@@ -1,6 +1,14 @@
- 
-@include('layouts.header')
-<div class="service-card card mt-3">
+  @include('layouts.header')
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Utility Bills</title>
+    <link rel="stylesheet" href="/css/utility.css">
+</head>
+<body>
+  <div class="service-card card mt-3">
     <div class="card-body">
         <div class="d-flex align-items-start user-service-tab">
             <div class="nav flex-column nav-pills me-3" id="v-pills-tab" role="tablist" aria-orientation="vertical">
@@ -750,3 +758,5 @@ function handleServiceChange(service) {
 //   });
 
 </script>
+</body>
+</html> 

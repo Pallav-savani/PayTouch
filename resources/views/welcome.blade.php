@@ -35,7 +35,7 @@
                             <div class="card-body text-center">
                                 <img class="invert1" src="../images/img/UBILL.png" alt="UBILL image"
                                     style="height:50px" />
-                                <a class="text-white" href="Pages/utilityBills.php">
+                                <a class="text-white" href="{{ route('utilitybills') }}">
                                     <h5 class="card-title mt-2 fw-bold">UTILITY BILLS</h5>
                                 </a>
                             </div>
@@ -47,7 +47,7 @@
                             <div class="card-body text-center">
                                 <img class="invert1" src="../images/img/REPORTS.png" alt="Reports image"
                                     style="height:50px" />
-                                <a class="text-white" href="Pages/reports.php">
+                                <a class="text-white" href=" #">
                                     <h5 class="card-title mt-2 fw-bold">REPORTS</h5>
                                 </a>
                             </div>
@@ -59,7 +59,7 @@
                             <div class="card-body text-center">
                                 <img class="invert1" src="../images/img/MYACCOUNT.png" alt="My Account image"
                                     style="height:50px" />
-                                <a class="text-white" href="Pages/myAccount.php">
+                                <a class="text-white" href="{{ route('myaccount') }}">
                                     <h5 class="card-title mt-2 fw-bold">MY ACCOUNT</h5>
                                 </a>
                             </div>
@@ -83,7 +83,7 @@
                             <div class="card-body text-center">
                                 <img class="invert1" src="../images/img/CCBILLPAY.png" alt="CC Bill Pay image"
                                     style="height:50px" />
-                                <a class="text-white" href="Pages/ccBillPay.php">
+                                <a class="text-white" href="{{ route('ccbill') }}">
                                     <h5 class="card-title mt-2 fw-bold">CC BILL PAY</h5>
                                 </a>
                             </div>
@@ -107,7 +107,7 @@
                             <div class="card-body text-center">
                                 <img class="invert1" src="../images/img/LOADWALLET.png" alt="Load Wallet image"
                                     style="height:50px" />
-                                <a class="text-white" href="Pages/loadWallet.php">
+                                <a class="text-white" href="{{ route('wallet') }}">
                                     <h5 class="card-title mt-2 fw-bold">LOAD WALLET</h5>
                                 </a>
                             </div>
