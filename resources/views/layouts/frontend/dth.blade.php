@@ -13,6 +13,7 @@
 @include('layouts.header')
 @vite(['resources/scss/style.scss'])
 
+
 <!-- Toast Container for Top Right Notifications -->
 <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
     <div id="alertToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">

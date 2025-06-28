@@ -31,6 +31,9 @@
                                         <input name="mobile_no" type="tel" class="form-control" id="customerId" placeholder="Enter any mobile number" pattern="[0-9]{10}" maxlength="10" required>
                                         <small class="form-text text-muted">You can recharge any mobile number</small>
                                     </div>
+                                    <div class="mb-3 w-100 d-flex align-items-center justify-content-end">
+                                        <button class="rounded">Browse Plan</button>
+                                    </div>                                    
                                     <div class="mb-3" style="text-align:left;">
                                         <label for="amount" class="form-label">Amount (₹)</label>
                                         <input name="amount" type="number" class="form-control" id="amount" placeholder="Amount" min="1" max="10000" step="1" required>

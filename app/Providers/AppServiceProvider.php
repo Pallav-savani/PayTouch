@@ -4,9 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Schema;
-use App\Models\User;
-use App\Observers\UserObserver;
-
+use App\Services\MobiKwikService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -15,7 +13,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(MobiKwikService::class, function ($app) {
+            return new MobiKwikService();
+        });
     }
 
     /**
@@ -23,11 +23,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Ensure this is only inside `boot()`, not globally
         Schema::defaultStringLength(191);
-        // User::observe(UserObserver::class);
-
-        $this->app->singleton(MobiKwikService::class, function ($app) {
-            return new MobiKwikService();
-        });
     }
 }

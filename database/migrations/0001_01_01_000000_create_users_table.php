@@ -17,8 +17,11 @@ return new class extends Migration
             $table->string('email', 191)->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->boolean('kyc_completed')->default(false);
             $table->rememberToken();
             $table->timestamps();
+
+            $table->index('kyc_completed');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
@@ -45,5 +48,10 @@ return new class extends Migration
         Schema::dropIfExists('users');
         Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
+
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropIndex(['kyc_completed']);
+            $table->dropColumn('kyc_completed');
+        });
     }
 };

@@ -21,6 +21,7 @@ class User extends Authenticatable
         'wallet_balance',
         'mobile',
         'phone',
+        'kyc_completed', 
     ];
 
     protected $hidden = [
@@ -31,6 +32,7 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'wallet_balance' => 'decimal:2',
+        'kyc_completed' => 'boolean',
     ];
 
     public function walletTransactions()
@@ -89,5 +91,34 @@ class User extends Authenticatable
     public function hasBalance(float $amount): bool
     {
         return ($this->wallet_balance ?? 0) >= $amount;
+    }
+
+        public function kycVerification()
+    {
+        return $this->hasOne(KycVerification::class);
+    }
+
+    /**
+     * Check if user has completed KYC
+     */
+    public function hasCompletedKyc()
+    {
+        return $this->kyc_completed === true;
+    }
+
+    /**
+     * Scope to get users with completed KYC
+     */
+    public function scopeKycCompleted($query)
+    {
+        return $query->where('kyc_completed', true);
+    }
+
+    /**
+     * Scope to get users with pending KYC
+     */
+    public function scopeKycPending($query)
+    {
+        return $query->where('kyc_completed', false);
     }
 }

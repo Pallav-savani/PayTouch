@@ -15,6 +15,7 @@ use App\Http\Controllers\API\RechargeApiFailController;
 use App\Http\Controllers\API\WalletController as APIWalletController;
 use App\Http\Controllers\API\CcBillPaymentController;
 use App\Http\Controllers\API\MobileRechargeController;
+use App\Http\Controllers\API\KycController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -67,7 +68,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/recharge/statistics', [MobileRechargeController::class, 'statistics']);
 Route::get('/recharge/plans', [MobileRechargeController::class, 'plans']);
 
-
+    Route::prefix('kyc')->group(function () {
+        Route::get('/', [KycController::class, 'index'])->name('kycVerification');
+        Route::get('/account-info', [KycController::class, 'getAccountInfo']);
+        Route::post('/', [KycController::class, 'store'])->name('kycVerification');
+        Route::get('/{id?}', [KycController::class, 'show'])->name('kycVerification');
+        Route::put('/{id}', [KycController::class, 'update'])->name('kycVerification');
+        Route::delete('/{id}', [KycController::class, 'destroy'])->name('kycVerification');
+    });
 
 });
 

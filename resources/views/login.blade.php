@@ -10,7 +10,7 @@
     
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: whitesmoke;
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -464,7 +464,7 @@
                             showAlert(`Welcome back! Redirecting...`, 'success');
                             
                             setTimeout(function() {
-                                window.location.href = '/welcome';
+                                window.location.href = '/kycVerification';
                             }, 1500);
                         } else {
                             showAlert('Login successful, but session data is incomplete. Please try again.', 'warning');

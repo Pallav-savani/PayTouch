@@ -16,6 +16,10 @@ Route::get('/register', function () {
     return view('register');
 })->name('register');
 
+Route::get('/kycVerification', function () {
+    return view('kycVerification');
+})->name('kycVerification');
+
 Route::get('/welcome', function () {
     return view('welcome');
 })->name('home');

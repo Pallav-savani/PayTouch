@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to PayTouch - Web App</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Welcome to PayTouch - KYC Verification</title>
         <!-- <link rel="stylesheet" href="{{ asset('css/app.css') }}"> -->
         <link rel="stylesheet" href="{{ asset('css/style.css') }}">
         <link rel="stylesheet" href="{{ asset('css/responsive.css') }}">
@@ -97,6 +98,8 @@
                 hideAuthLoading();
                 showMainContent();
                 console.log("User authenticated successfully:", user);
+                // KYC check and redirect if not completed
+                checkKycStatus();
             },
             error: function (xhr) {
                 console.error("Authentication failed:", xhr);
@@ -129,6 +132,29 @@
 
     function showMainContent() {
         $("#mainContent").show();
+    }
+
+    // KYC status check and redirect
+    function checkKycStatus() {
+        const token = localStorage.getItem("auth_token");
+        if (!token) return;
+        $.ajax({
+            url: "{{ url('/api/kyc') }}",
+            type: "GET",
+            headers: {
+                "Authorization": "Bearer " + token,
+                "Content-Type": "application/json"
+            },
+            success: function(response) {
+                // If KYC is not completed, redirect to KYC page
+                if (response && response.kyc_completed === false) {
+                    window.location.href = "{{ url('/kycVerification') }}";
+                }
+            },
+            error: function(xhr) {
+                // If unauthorized, do nothing (handled elsewhere)
+            }
+        });
     }
 
     function redirectToLogin(reason = "Authentication required") {
