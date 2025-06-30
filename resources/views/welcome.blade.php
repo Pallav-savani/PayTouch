@@ -248,7 +248,7 @@
                      <div class="col-lg-4 mb-4 col-sm-6 ">
                         <div class=" ">
                             <div class="card-body">
-                                <img class="invert1" src="{{ asset('images/bbps.jpg') }}" alt="BBPS image"
+                                <img class="invert1" src="{{ asset('images/Bharat Connect Logo.png') }}" alt="BBPS image"
                                     style="height:135px "/>
                             </div>
                         </div>

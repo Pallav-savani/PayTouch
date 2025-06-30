@@ -5,7 +5,7 @@
             <div class="col-md-12">
                 <div class="row formobile">
                     <h4>Transaction Status</h4>
-                </div>
+                </div>  
             </div>
             <div id="divStatusService" style="border-style: groove; margin-top: 10px;">
                 <div class="card-body">

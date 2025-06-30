@@ -10,7 +10,7 @@
     
     <style>
         body {
-            background: whitesmoke;
+            background: linear-gradient(135deg,rgb(102, 181, 234) 0%,rgb(81, 75, 162) 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -63,7 +63,7 @@
         }
         
         .btn-login {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background:linear-gradient(135deg,rgb(102, 181, 234) 0%,rgb(106, 142, 221) 100%);
             border: none;
             padding: 12px 30px;
             border-radius: 25px;
@@ -79,7 +79,7 @@
         }
         
         .btn-forgot {
-            color: #667eea;
+            color:rgb(51, 127, 199);
             text-decoration: none;
             font-weight: 500;
             transition: all 0.3s ease;
@@ -294,11 +294,11 @@
                 <div class="login-container">
                     <!-- <div class="row g-0"> -->
                         <!-- Left Side - Welcome -->
-
+                    <img height="65px" style=margin-left:120px;margin-top:20px aligh-item:center; src="{{ asset('images/logo.png') }}" />
                         
                         <!-- Right Side - Login Form -->
-                        <div class="col-md-7 login-right slide-in-right">
-                            <div class="mb-4 fade-in">
+                        <div class="col-md-7 login-right slide-in-right"> 
+                            <div class="mb-4 fade-in"> 
                                 <h3 class="text-center mb-1">Sign In</h3>
                                 <p class="text-center text-muted">Enter your credentials to access your account</p>
                             </div>
@@ -351,27 +351,7 @@
                                 <a href="{{ route('register') }}" class="btn btn-outline">
                                     <i class="fas fa-user-plus me-1"></i>Create Account
                                 </a>
-                            </div>
-                            
-                            <!-- Social Login -->
-                            <div class="social-login fade-in">
-                                <div class="divider">
-                                    <span>Or continue with</span>
-                                </div>
-                                
-                                <div class="row">
-                                    <div class="col-6">
-                                        <button class="btn btn-social btn-google w-100" id="googleLogin">
-                                            <i class="fab fa-google me-2"></i>Google
-                                        </button>
-                                    </div>
-                                    <div class="col-6">
-                                        <button class="btn btn-social btn-linkedin w-100" id="linkedinLogin">
-                                            <i class="fab fa-linkedin me-2"></i>LinkedIn
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
+                            </div> 
                             
                             <div class="text-center mt-4 fade-in">
                                 <a href="{{ route('index') }}" class="text-decoration-none">

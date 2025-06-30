@@ -1,9 +1,10 @@
 
 :root {
-  --col-logo1: #fc7200;
-  --col-logo2: #1d2671;
-  --bg-gradient: linear-gradient(#1d2671 0%,
-      #fc7200 100%);
+  /* --col-logo1: #fc7200; */
+  /* --col-logo2: #1d2671; */
+  --bg-gradient: linear-gradient(90deg,
+     
+      #53a3e9 100%);
   --bg-orange-light: #fee1c9;
   --bg-blue-light: #96dff0;
 

@@ -245,14 +245,15 @@ $(document).ready(function() {
     });
 
     // Stop auto-refresh when clicking on other tabs
-    $('a[data-bs-toggle="pill"]').on('shown.bs.tab', function(e) {
-        if (!$(e.target).attr('href').includes('cc-fetch')) {
+    $('[data-bs-toggle="pill"]').on('shown.bs.tab', function(e) {
+        var href = $(e.target).attr('href') || $(e.target).data('bsTarget');
+        if (!href || !href.includes('cc-fetch')) {
             stopAutoRefresh();
         }
     });
 
     // Form validation for CC Bill payment
-    function validateCCBillForm() {
+    function validateCCBillForm() {                                                                              
         const service = $('#cmbCCService').val();
         const customerNo = $('#ccCustomerId').val();
         const amount = $('#ccAmount').val();

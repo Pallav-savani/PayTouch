@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
@@ -21,7 +21,6 @@ class UserController extends Controller
             'mobile' => $user->mobile,
             'email' => $user->email,
             'wallet_balance' => $user->wallet_balance ?? 0,
-            'kyc_completed' => $user->kyc_completed,
         ]);
     }
 

@@ -10,7 +10,7 @@
     
     <style>
         body {
-            background: whitesmoke;
+            background: linear-gradient(135deg,rgb(102, 181, 234) 0%,rgb(81, 75, 162) 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -51,7 +51,7 @@
         }
         
         .btn-register {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg,rgb(102, 181, 234) 0%,rgb(81, 75, 162) 100%);
             border: none;
             padding: 12px 30px;
             border-radius: 25px;
@@ -146,7 +146,7 @@
             <div class="col-12">
                 <div class="register-container">
                     <!-- <div class="row g-0"> -->
-                        
+                        <img height="65px" style=margin-left:170px;margin-top:20px aligh-item:center; src="{{ asset('images/logo.png') }}" />
                         
                         <!-- Right Side - Registration Form -->
                         <div class="col-md-7 register-right">
