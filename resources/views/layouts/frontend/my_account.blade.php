@@ -421,7 +421,7 @@
               <button type="submit" class="btn btn-primary">Save Changes</button>
             </div>
             <div class="col-6 mb-2">
-              <button type="submit" class="btn btn-secondary">Cancle</button>
+              <button type="submit" class="btn btn-secondary">Cancle This</button>
             </div>
           </div>
         </form>
