@@ -312,7 +312,7 @@
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="kycModalLabel">Update Account Information</h5>
+        <h5 class="modal-title" id="kycModalLabel">Update KYC Account Information</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
@@ -416,8 +416,13 @@
           <input type="hidden" id="kyc_id" name="kyc_id">
           <div id="kyc-modal-error" class="alert alert-danger" style="display:none;"></div>
           <div id="kyc-modal-success" class="alert alert-success" style="display:none;"></div>
-          <div class="col-12 mb-2">
-            <button type="submit" class="btn btn-primary">Save Changes</button>
+          <div class="col-12">
+            <div class="col-6 mb-2">
+              <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+            <div class="col-6 mb-2">
+              <button type="submit" class="btn btn-secondary">Cancle</button>
+            </div>
           </div>
         </form>
       </div>
