@@ -1,0 +1,29 @@
+name: Auto Merge Branches into Main
+
+on:
+  push:
+    branches:
+      - pallav
+      - jaydeep
+
+jobs:
+  merge-to-main:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Git user
+        run: |
+          git config --global user.name 'Pallav-savani'
+          git config --global user.email 'beasthunter0666@gmail.com'
+
+      - name: Merge to main
+        run: |
+          git fetch origin
+          git checkout main
+          git pull origin main
+          git merge origin/${{ github.ref_name }}
+          git push origin main
