@@ -1,0 +1,26 @@
+$primary: #007bff;
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f8f9fa;
+  color: $primary;
+}
+
+
+.container {
+  --bs-gutter-x: 0;
+  --bs-gutter-y: 0;
+  padding-right: 0 !important;
+  padding-left: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  width: 100% !important;
+}
+
+/* resources/css/app.css */
+.jost-bold {
+  font-family: "Jost", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 700;
+  font-style: normal;
+}

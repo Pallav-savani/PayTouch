@@ -1,0 +1,156 @@
+ .left-space {
+            margin-left: 15px;
+            padding-left: 15px;
+        }
+
+        .user-service-tab {
+            width: 100%;
+        }
+
+        .nav-pills {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            /* background-color: #f4f9fc; */
+            margin: 0;
+        }
+
+        .container1 {
+            display: flex;
+            flex-wrap: wrap;
+            padding-left: 200px;
+            width: 80%;
+            height:400px;
+        }
+
+        .fastag-form, .history {
+            background: linear-gradient(to bottom right, #43cea2, #185a9d);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 10px;
+        }
+
+        .fastag-form {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .history {
+            flex: 2;
+            background: white;
+            color: black;
+            overflow-x: auto;
+            min-width: 400px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #185a9d;
+        }
+
+        h3 {
+            text-align: center;
+        }
+
+        input, select {
+            padding: 10px;
+            width: 90%;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 6px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: white;
+            color: #185a9d;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .history p {
+            margin-bottom: 15px;
+        }
+        .c1{
+            text-align:left;
+        }
+
+        /* Responsive styles */
+        @media (max-width: 1200px) {
+            .container1 {
+                padding-left: 40px;
+                width: 98%;
+            }
+        }
+        @media (max-width: 991px) {
+            .container1 {
+                flex-direction: column;
+                padding-left: 0;
+                width: 100%;
+                height: auto;
+            }
+            .fastag-form, .history {
+                min-width: 0;
+                width: 98%;
+                margin: 10px auto;
+                box-sizing: border-box;
+            }
+            .history {
+                min-width: 0;
+            }
+        }
+        @media (max-width: 767px) {
+            .fastag-form, .history {
+                padding: 12px 6px;
+                font-size: 15px;
+            }
+            input, select {
+                width: 100%;
+                font-size: 15px;
+            }
+            button {
+                width: 100%;
+                font-size: 15px;
+            }
+            table {
+                font-size: 13px;
+            }
+            th, td {
+                padding: 7px;
+            }
+        }
+        @media (max-width: 575px) {
+            .fastag-form, .history {
+                padding: 8px 2px;
+                font-size: 14px;
+            }
+            h3 {
+                font-size: 1.1rem;
+            }
+            input, select {
+                font-size: 14px;
+            }
+            button {
+                font-size: 14px;
+            }
+            table {
+                font-size: 12px;
+            }
+        }
