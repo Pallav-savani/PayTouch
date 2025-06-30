@@ -165,9 +165,12 @@
                                     </div>
                                     
                                     <div class="col-12 mt-3">
-                                        <button type="button" id="refresh-data" class="btn btn-primary">
-                                            <i class="fas fa-sync-alt"></i> Refresh Data
-                                        </button>
+                                    <button type="button" id="refresh-data" class="btn bg-success text-white">
+                                    <i class="fas fa-sync-alt"></i> Refresh Data
+                                    </button>
+                                    <button type="button" id="open-kyc-modal" class="btn btn-primary ms-2">
+                                    <i class="fas fa-id-card"></i> Update KYC Info
+                                    </button>
                                     </div>
                                 </form>
                             </div>
@@ -304,6 +307,124 @@
     </div>
 </div>
 
+<!-- KYC Update Modal -->
+<div class="modal fade" id="kycModal" tabindex="-1" aria-labelledby="kycModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="kycModalLabel">Update Account Information</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="kyc-update-form" class="row">
+          <div class="col-md-6 mb-3">
+            <label for="kyc_member_id" class="form-label">Member ID</label>
+            <input type="text" class="form-control" id="kyc_member_id" name="member_id" readonly>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="kyc_member_no" class="form-label">Member No</label>
+            <input type="text" class="form-control" id="kyc_member_no" name="member_no" readonly>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="kyc_member_code" class="form-label">Member Code</label>
+            <input type="text" class="form-control" id="kyc_member_code" name="member_code" readonly>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="kyc_mobile_no" class="form-label">Mobile No</label>
+            <input type="text" class="form-control" id="kyc_mobile_no" name="mobile_no" maxlength="15" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="kyc_firm_name" class="form-label">Firm Name</label>
+            <input type="text" class="form-control" id="kyc_firm_name" name="firm_name">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="kyc_member_name" class="form-label">Member Name</label>
+            <input type="text" class="form-control" id="kyc_member_name" name="member_name" maxlength="255" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="kyc_birth_date" class="form-label">Birth Date</label>
+            <input type="text" class="form-control" id="kyc_birth_date" name="birth_date" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="kyc_age" class="form-label">Age</label>
+            <input type="number" class="form-control" id="kyc_age" name="age" min="18" max="100" required>
+          </div>
+          <div class="col-md-12 mb-3">
+            <label for="kyc_firm_address" class="form-label">Firm Address</label>
+            <input type="text" class="form-control" id="kyc_firm_address" name="firm_address">
+          </div>
+          <div class="col-md-12 mb-3">
+            <label for="kyc_home_address" class="form-label">Home Address</label>
+            <input type="text" class="form-control" id="kyc_home_address" name="home_address" required>
+          </div>
+          <div class="col-md-12 mb-3">
+            <label for="kyc_city_name" class="form-label">City Name</label>
+            <input type="text" class="form-control" id="kyc_city_name" name="city_name" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="kyc_email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="kyc_email" name="email" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="kyc_status" class="form-label">Status</label>
+            <input type="text" class="form-control" id="kyc_status" name="status" readonly>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="kyc_discount_pattern" class="form-label">Discount Pattern</label>
+            <input type="text" class="form-control" id="kyc_discount_pattern" name="discount_pattern" readonly>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="kyc_pan_card_no" class="form-label">Pan Card No</label>
+            <input type="text" class="form-control" id="kyc_pan_card_no" name="pan_card_no" maxlength="10" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="kyc_aadhaar_no" class="form-label">Aadhaar No</label>
+            <input type="text" class="form-control" id="kyc_aadhaar_no" name="aadhaar_no" maxlength="12" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="kyc_gst_no" class="form-label">GST No</label>
+            <input type="text" class="form-control" id="kyc_gst_no" name="gst_no" maxlength="15">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="kyc_registration_date" class="form-label">Registration Date</label>
+            <input type="text" class="form-control" id="kyc_registration_date" name="registration_date" readonly>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="kyc_activation_date" class="form-label">Activation Date</label>
+            <input type="text" class="form-control" id="kyc_activation_date" name="activation_date" readonly>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="kyc_password_change_date" class="form-label">Password Change Date</label>
+            <input type="text" class="form-control" id="kyc_password_change_date" name="password_change_date" readonly>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="kyc_last_topup_date" class="form-label">Last Topup Date</label>
+            <input type="text" class="form-control" id="kyc_last_topup_date" name="last_topup_date" readonly>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="kyc_balance" class="form-label">Balance</label>
+            <input type="text" class="form-control" id="kyc_balance" name="balance" readonly>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="kyc_dmr_balance" class="form-label">DMR Balance</label>
+            <input type="text" class="form-control" id="kyc_dmr_balance" name="dmr_balance" readonly>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="kyc_discount" class="form-label">Discount</label>
+            <input type="text" class="form-control" id="kyc_discount" name="discount" readonly>
+          </div>
+          <input type="hidden" id="kyc_id" name="kyc_id">
+          <div id="kyc-modal-error" class="alert alert-danger" style="display:none;"></div>
+          <div id="kyc-modal-success" class="alert alert-success" style="display:none;"></div>
+          <div class="col-12 mb-2">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
@@ -423,5 +544,154 @@ $(document).ready(function() {
             fetchAccountInfo();
         }
     }, 300000); // 5 minutes
+
+    // KYC Modal logic
+    var kycModal = new bootstrap.Modal(document.getElementById('kycModal'));
+    var kycId = null;
+
+    // Open KYC modal and load data
+    $('#open-kyc-modal').on('click', function() {
+        // Clear previous messages
+        $('#kyc-modal-error').hide();
+        $('#kyc-modal-success').hide();
+        // Fetch current KYC info
+        $.ajax({
+            url: '/api/kyc/account-info',
+            type: 'GET',
+            dataType: 'json',
+            headers: {
+                'Authorization': 'Bearer ' + localStorage.getItem('auth_token'),
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            success: function(response) {
+                if (response.success && response.kyc_data) {
+                    var data = response.kyc_data;
+                    $('#kyc_member_id').val(data.member_id || '');
+                    $('#kyc_member_no').val(data.member_no || '');
+                    $('#kyc_member_code').val(data.member_code || '');
+                    $('#kyc_mobile_no').val(data.mobile_no || '');
+                    $('#kyc_firm_name').val(data.firm_name || '');
+                    $('#kyc_member_name').val(data.member_name || '');
+                    $('#kyc_birth_date').val(data.birth_date || '');
+                    $('#kyc_age').val(data.age || '');
+                    $('#kyc_firm_address').val(data.firm_address || '');
+                    $('#kyc_home_address').val(data.home_address || '');
+                    $('#kyc_city_name').val(data.city_name || '');
+                    $('#kyc_email').val(data.email || '');
+                    $('#kyc_status').val(data.status || '');
+                    $('#kyc_discount_pattern').val(data.discount_pattern || '');
+                    $('#kyc_pan_card_no').val(data.pan_card_no || '');
+                    $('#kyc_aadhaar_no').val(data.aadhaar_no || '');
+                    $('#kyc_gst_no').val(data.gst_no || '');
+                    $('#kyc_registration_date').val(data.registration_date || '');
+                    $('#kyc_activation_date').val(data.activation_date || '');
+                    $('#kyc_password_change_date').val(data.password_change_date || '');
+                    $('#kyc_last_topup_date').val(data.last_topup_date || '');
+                    $('#kyc_balance').val(data.balance || '');
+                    $('#kyc_dmr_balance').val(data.dmr_balance || '');
+                    $('#kyc_discount').val(data.discount || '');
+                    // Get KYC id for update (need to fetch from /api/kyc or similar if not in account-info)
+                    // We'll try to fetch the id from /api/kyc
+                    $.ajax({
+                        url: '/api/kyc',
+                        type: 'GET',
+                        dataType: 'json',
+                        headers: {
+                            'Authorization': 'Bearer ' + localStorage.getItem('auth_token'),
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        success: function(resp) {
+                            if (resp.success && resp.kyc_data && resp.kyc_data.id) {
+                                kycId = resp.kyc_data.id;
+                                $('#kyc_id').val(kycId);
+                            } else {
+                                kycId = null;
+                                $('#kyc_id').val('');
+                            }
+                            kycModal.show();
+                        },
+                        error: function() {
+                            kycId = null;
+                            $('#kyc_id').val('');
+                            kycModal.show();
+                        }
+                    });
+                } else {
+                    $('#kyc-modal-error').text('Failed to load KYC info.').show();
+                    kycModal.show();
+                }
+            },
+            error: function() {
+                $('#kyc-modal-error').text('Failed to load KYC info.').show();
+                kycModal.show();
+            }
+        });
+    });
+
+    // Handle KYC update form submit
+    $('#kyc-update-form').on('submit', function(e) {
+        e.preventDefault();
+        $('#kyc-modal-error').hide();
+        $('#kyc-modal-success').hide();
+        var id = $('#kyc_id').val();
+        if (!id) {
+            $('#kyc-modal-error').text('KYC record not found.').show();
+            return;
+        }
+        var payload = {
+            member_id: $('#kyc_member_id').val(),
+            member_no: $('#kyc_member_no').val(),
+            member_code: $('#kyc_member_code').val(),
+            mobile_no: $('#kyc_mobile_no').val(),
+            firm_name: $('#kyc_firm_name').val(),
+            member_name: $('#kyc_member_name').val(),
+            birth_date: $('#kyc_birth_date').val(),
+            age: $('#kyc_age').val(),
+            firm_address: $('#kyc_firm_address').val(),
+            home_address: $('#kyc_home_address').val(),
+            city_name: $('#kyc_city_name').val(),
+            email: $('#kyc_email').val(),
+            status: $('#kyc_status').val(),
+            discount_pattern: $('#kyc_discount_pattern').val(),
+            pan_card_no: $('#kyc_pan_card_no').val(),
+            aadhaar_no: $('#kyc_aadhaar_no').val(),
+            gst_no: $('#kyc_gst_no').val(),
+            registration_date: $('#kyc_registration_date').val(),
+            activation_date: $('#kyc_activation_date').val(),
+            password_change_date: $('#kyc_password_change_date').val(),
+            last_topup_date: $('#kyc_last_topup_date').val(),
+            balance: $('#kyc_balance').val(),
+            dmr_balance: $('#kyc_dmr_balance').val(),
+            discount: $('#kyc_discount').val()
+        };
+        $.ajax({
+            url: '/api/kyc/' + id,
+            type: 'PUT',
+            dataType: 'json',
+            data: JSON.stringify(payload),
+            headers: {
+                'Authorization': 'Bearer ' + localStorage.getItem('auth_token'),
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            success: function(response) {
+                if (response.success) {
+                    $('#kyc-modal-success').text('KYC info updated successfully.').show();
+                    fetchAccountInfo(); // Refresh main info
+                } else {
+                    $('#kyc-modal-error').text(response.message || 'Failed to update KYC info.').show();
+                }
+            },
+            error: function(xhr) {
+                var msg = 'Failed to update KYC info.';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    msg = xhr.responseJSON.message;
+                }
+                $('#kyc-modal-error').text(msg).show();
+            }
+        });
+    });
 });
 </script>
