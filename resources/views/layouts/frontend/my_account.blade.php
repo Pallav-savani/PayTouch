@@ -41,7 +41,7 @@
                             <div id="error-message" class="alert alert-danger" style="display: none;"></div>
                             
                             <div class="row justify-content-center mt-2">
-                                <form class="row form-horizontal" id="account-info-form" method="post" action="#"
+                                <form class="row form-horizontal pb-3" id="account-info-form" method="post" action="#"
                                     style="border-style: groove; margin-bottom:5px;">
                                     
                                     <label for="member_id" class="col-md-2 col-form-label fw-bold">Member ID</label>
@@ -326,10 +326,6 @@
             <input type="text" class="form-control" id="kyc_member_no" name="member_no" readonly>
           </div>
           <div class="col-md-6 mb-3">
-            <label for="kyc_member_code" class="form-label">Member Code</label>
-            <input type="text" class="form-control" id="kyc_member_code" name="member_code" readonly>
-          </div>
-          <div class="col-md-6 mb-3">
             <label for="kyc_mobile_no" class="form-label">Mobile No</label>
             <input type="text" class="form-control" id="kyc_mobile_no" name="mobile_no" maxlength="15" required>
           </div>
@@ -375,15 +371,15 @@
           </div>
           <div class="col-md-6 mb-3">
             <label for="kyc_pan_card_no" class="form-label">Pan Card No</label>
-            <input type="text" class="form-control" id="kyc_pan_card_no" name="pan_card_no" maxlength="10" required>
+            <input type="text" class="form-control" id="kyc_pan_card_no" name="pan_card_no" maxlength="10" readonly required>
           </div>
           <div class="col-md-6 mb-3">
             <label for="kyc_aadhaar_no" class="form-label">Aadhaar No</label>
-            <input type="text" class="form-control" id="kyc_aadhaar_no" name="aadhaar_no" maxlength="12" required>
+            <input type="text" class="form-control" id="kyc_aadhaar_no" name="aadhaar_no" maxlength="12" readonly required>
           </div>
           <div class="col-md-6 mb-3">
             <label for="kyc_gst_no" class="form-label">GST No</label>
-            <input type="text" class="form-control" id="kyc_gst_no" name="gst_no" maxlength="15">
+            <input type="text" class="form-control" id="kyc_gst_no" name="gst_no" maxlength="15" readonly>
           </div>
           <div class="col-md-6 mb-3">
             <label for="kyc_registration_date" class="form-label">Registration Date</label>
@@ -684,6 +680,7 @@ $(document).ready(function() {
             success: function(response) {
                 if (response.success) {
                     $('#kyc-modal-success').text('KYC info updated successfully.').show();
+                    window.location.reload(); // Refresh the page
                     fetchAccountInfo(); // Refresh main info
                 } else {
                     $('#kyc-modal-error').text(response.message || 'Failed to update KYC info.').show();

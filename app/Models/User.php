@@ -21,6 +21,7 @@ class User extends Authenticatable
         'wallet_balance',
         'mobile',
         'phone',
+        'kyc_completed'
     ];
 
     protected $hidden = [

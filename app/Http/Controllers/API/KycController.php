@@ -289,7 +289,7 @@ class KycController extends Controller
 
                 // Update user's KYC status
                 $user->update(['kyc_completed' => true]);
-
+// dd($kycRecord);
                 DB::commit();
 
                 return response()->json([
@@ -380,7 +380,30 @@ class KycController extends Controller
                 ], 422);
             }
 
-            $kycData->update($request->all());
+            // Only update fields that are present in the request and allowed
+            $updatableFields = [
+                'member_id',
+                'member_no',
+                'mobile_no',
+                'member_name',
+                'birth_date',
+                'age',
+                'home_address',
+                'city_name',
+                'email',
+                'pan_card_no',
+                'aadhaar_no',
+                'firm_name',
+                'firm_address',
+                'gst_no',
+            ];
+            $dataToUpdate = [];
+            foreach ($updatableFields as $field) {
+                if ($request->has($field)) {
+                    $dataToUpdate[$field] = $request->input($field);
+                }
+            }
+            $kycData->update($dataToUpdate);
 
             return response()->json([
                 'success' => true,
