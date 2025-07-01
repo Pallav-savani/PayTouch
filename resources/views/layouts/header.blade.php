@@ -77,7 +77,7 @@
                             <h2>{{ ucwords(str_replace(['-', '_'], ' ', Request::segment(1) ?: 'Home')) }}</h2>
                         <div class="text-end">
                             <a href="#" class="d-inline-block">
-                                <img class="bbps-logo" src="{{ asset('images/bbps.jpg') }}" alt="BBPS Logo" />
+                                <img class="bbps-logo" src="{{ asset('images/Bharat Connect Logo.png') }}" alt="BBPS Logo" />
                             </a>
                         </div>
                     </div>

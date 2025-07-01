@@ -217,7 +217,7 @@
                             </div>
                             <div class="col-md-6"></div>
                             <div class="img-cent col-md-2">
-                                <img class="img-fluid" src="images/bbps.jpg" width="140px" alt="Payment Gateway Logo">
+                                <img class="img-fluid" src="images/Bharat Connect Logo.png" width="140px" alt="Payment Gateway Logo">
                             </div>
 
                             <!-- Bill Payments Table -->
