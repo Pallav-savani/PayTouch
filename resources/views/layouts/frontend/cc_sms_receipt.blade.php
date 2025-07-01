@@ -27,7 +27,7 @@
                     </div>
                     <div class="col-md-4 d-flex align-items-center justify-content-end">
                         <div class="text-end w-100">
-                            <img src="images/bbps.jpg" alt="BBPS Logo" style="width: 150px; margin-left:1000px; margin-bottom:150px;" />
+                            <img src="images/Bharat Connect Logo.png" alt="BBPS Logo" style="width: 150px; margin-left:1000px; margin-bottom:150px;" />
                         </div>
                     </div>
                 </div>
