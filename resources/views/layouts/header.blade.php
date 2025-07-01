@@ -112,6 +112,8 @@
                                     'mobile' => route('mobile'),
                                     'fastag' => route('fastag'),
                                     'ccbill' => route('ccbill'),
+                                    'utilitybills' => route('utilitybills'),
+                                    'myaccount' => route('myaccount'),
                                     'wallet' => route('wallet')
                                 ];
                                 $currentRoute = Request::route()->getName();
